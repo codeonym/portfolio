@@ -3,10 +3,13 @@
 import { useEffect, useRef } from "react";
 import { AnimatePresence } from "motion/react";
 import type { AppId } from "@/config/apps.config";
+import { appList } from "@/config/apps.config";
+import { sfx } from "@/lib/sfx";
 import { useOsStore } from "@/store/os-store";
 import { AmbientEvents } from "./ambient-events";
 import { AvatarStage } from "./avatar-stage";
 import { Dock } from "./dock";
+import { StageChrome } from "./stage-chrome";
 import { SystemLog } from "./system-log";
 import { OsWindow } from "./os-window";
 import { TopBar } from "./top-bar";
@@ -42,16 +45,25 @@ export function SystemOS() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeTop();
+      if (e.key === "Escape") return closeTop();
+      // hotkeys 1–6 launch apps, game style
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const slot = Number.parseInt(e.key, 10) - 1;
+      if (slot >= 0 && slot < appList.length) {
+        sfx.open();
+        open(appList[slot].id);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [closeTop]);
+  }, [closeTop, open]);
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
       <TopBar />
       <div ref={stageRef} className="relative flex-1">
+        <div aria-hidden className="hex-grid absolute inset-0" />
+        <StageChrome />
         <AvatarStage />
         <SystemLog />
         <AmbientEvents />

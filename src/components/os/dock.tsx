@@ -13,7 +13,7 @@ export function Dock() {
   return (
     <footer className="z-40 flex items-center justify-between gap-4 border-t border-system/25 bg-background/85 px-5 py-2 backdrop-blur-md">
       <nav aria-label="System applications" className="flex items-center gap-2">
-        {appList.map((app) => {
+        {appList.map((app, index) => {
           const win = windows.find((w) => w.id === app.id);
           return (
             <button
@@ -37,6 +37,12 @@ export function Dock() {
                 strokeWidth={1.75}
               />
               {app.title}
+              <kbd
+                aria-hidden
+                className="rounded-[2px] border border-current/25 px-1 font-mono text-[9px] leading-4 opacity-50"
+              >
+                {index + 1}
+              </kbd>
               <span
                 aria-hidden
                 className={cn(
