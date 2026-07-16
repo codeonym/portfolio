@@ -1,6 +1,7 @@
 "use client";
 
-import { appList } from "@/data/apps";
+import { appList } from "@/config/apps.config";
+import { systemConfig } from "@/config/system.config";
 import { sfx } from "@/lib/sfx";
 import { useOsStore } from "@/store/os-store";
 import { cn } from "@/lib/utils";
@@ -49,7 +50,7 @@ export function Dock() {
         })}
       </nav>
       <p className="hidden font-mono text-[10px] text-muted-foreground lg:block">
-        SYSTEM v2.0 · forged by codeonym · AI integration awakening soon
+        {systemConfig.dockFooter}
       </p>
     </footer>
   );

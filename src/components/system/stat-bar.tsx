@@ -4,7 +4,7 @@ import { motion, useReducedMotion } from "motion/react";
 import type { LucideIcon } from "lucide-react";
 import { Brain, Hexagon, Radar, Shield, Sword, WandSparkles, Zap } from "lucide-react";
 import { IconTile } from "@/components/system/icon-tile";
-import type { Stat } from "@/data/types";
+import type { Stat } from "@/config/types";
 
 const statIcons: Record<string, { icon: LucideIcon; tone: "system" | "arcane" | "gold" | "ember" }> = {
   INT: { icon: Brain, tone: "arcane" },

@@ -1,6 +1,6 @@
 import { AtSign, Code2, Globe } from "lucide-react";
 import { IconTile } from "@/components/system/icon-tile";
-import { player } from "@/data/player";
+import { player } from "@/config/player.config";
 
 const channels = [
   {

@@ -1,7 +1,24 @@
 import type { LucideIcon } from "lucide-react";
-import { Brain, Gauge, SatelliteDish, ScrollText, Swords } from "lucide-react";
+import {
+  Brain,
+  Gauge,
+  SatelliteDish,
+  ScrollText,
+  Swords,
+} from "lucide-react";
 
-export type AppId = "status" | "quests" | "skills" | "chronicle" | "summon";
+/**
+ * ── APP REGISTRY ──────────────────────────────────────────────
+ * One entry per System window: dock label, icon, default position
+ * and width. Positions assume a ≥1280px stage; the window manager
+ * clamps them on smaller screens.
+ */
+export type AppId =
+  | "status"
+  | "quests"
+  | "skills"
+  | "chronicle"
+  | "summon";
 
 export interface AppDefinition {
   id: AppId;

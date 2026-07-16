@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import type { AppId } from "@/data/apps";
-import { apps } from "@/data/apps";
+import type { AppId } from "@/config/apps.config";
+import { apps } from "@/config/apps.config";
 
 export interface OsWindow {
   id: AppId;

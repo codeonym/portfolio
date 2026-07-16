@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { Activity, MapPin, Volume2, VolumeX } from "lucide-react";
-import { player } from "@/data/player";
+import { player } from "@/config/player.config";
+import { systemConfig } from "@/config/system.config";
 import { sfx } from "@/lib/sfx";
 import { useSoundStore } from "@/store/sound-store";
 
-/** XP toward next level — flavor, not real data */
-const XP_PROGRESS = 64;
+const XP_PROGRESS = systemConfig.xpProgress;
 
 export function TopBar() {
   const [now, setNow] = useState<string | null>(null);

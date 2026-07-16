@@ -12,7 +12,7 @@ import {
   Terminal,
 } from "lucide-react";
 import { IconTile } from "@/components/system/icon-tile";
-import { skillCategories } from "@/data/skills";
+import { skillCategories } from "@/config/skills.config";
 
 const categoryIcons: Record<
   string,

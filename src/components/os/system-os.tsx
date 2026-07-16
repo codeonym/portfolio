@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { AnimatePresence } from "motion/react";
-import type { AppId } from "@/data/apps";
+import type { AppId } from "@/config/apps.config";
 import { useOsStore } from "@/store/os-store";
 import { AvatarStage } from "./avatar-stage";
 import { Dock } from "./dock";

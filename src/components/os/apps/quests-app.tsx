@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
-import { quests } from "@/data/quests";
-import type { Quest, QuestRank } from "@/data/types";
+import { quests } from "@/config/quests.config";
+import type { Quest, QuestRank } from "@/config/types";
 import { sfx } from "@/lib/sfx";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";

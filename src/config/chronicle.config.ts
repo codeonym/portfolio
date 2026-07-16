@@ -1,5 +1,10 @@
 import type { Achievement, ChronicleEntry } from "./types";
 
+/**
+ * ── CHRONICLE ─────────────────────────────────────────────────
+ * `chronicle` = professional experience (newest first).
+ * `achievements` = education / titles, rendered as gold medal tiles.
+ */
 export const chronicle: ChronicleEntry[] = [
   {
     id: "opensnz-engineer",

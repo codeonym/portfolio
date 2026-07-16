@@ -5,7 +5,7 @@ import { Minus, X } from "lucide-react";
 import { IconTile } from "@/components/system/icon-tile";
 import { sfx } from "@/lib/sfx";
 import type { RefObject } from "react";
-import { apps } from "@/data/apps";
+import { apps } from "@/config/apps.config";
 import type { OsWindow as OsWindowState } from "@/store/os-store";
 import { useOsStore } from "@/store/os-store";
 

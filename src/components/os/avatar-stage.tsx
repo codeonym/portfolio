@@ -1,5 +1,6 @@
 import { Bot } from "lucide-react";
-import { player } from "@/data/player";
+import { player } from "@/config/player.config";
+import { systemConfig } from "@/config/system.config";
 import { TypewriterText } from "@/components/system/typewriter-text";
 
 /**
@@ -36,7 +37,7 @@ export function AvatarStage() {
           {player.title.toUpperCase()}
         </p>
         <p className="mt-4 font-mono text-xs text-muted-foreground">
-          <TypewriterText text="[ AWAITING AVATAR SYNC ... ]" speed={45} />
+          <TypewriterText text={systemConfig.avatarCaption} speed={45} />
         </p>
       </div>
     </div>
