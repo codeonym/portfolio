@@ -72,7 +72,11 @@ export function OsWindow({ win, stageRef, children }: OsWindowProps) {
       aria-label={def.title}
     >
       <div
-        onPointerDown={(e) => dragControls.start(e)}
+        onPointerDown={(e) => {
+          // stop native text selection from spilling into the window content
+          e.preventDefault();
+          dragControls.start(e);
+        }}
         className="flex cursor-grab touch-none items-center justify-between border-b border-system/25 bg-system/5 px-4 py-2 active:cursor-grabbing"
       >
         <span className="flex items-center gap-2.5 font-heading text-xs tracking-[0.3em] text-system select-none">
