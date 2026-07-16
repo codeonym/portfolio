@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { GlitchText } from "@/components/system/glitch-text";
 import { SystemNotification } from "@/components/system/system-notification";
+import { systemConfig } from "@/config/system.config";
 
 const QUERY = "(min-width: 1024px)";
 
@@ -32,23 +33,21 @@ export function DeviceGate({ children }: { children: React.ReactNode }) {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-8 px-6 text-center">
         <p className="font-heading text-lg tracking-[0.3em] text-destructive">
-          <GlitchText text="⚠ SYSTEM ERROR" />
+          <GlitchText text={systemConfig.unsupported.error} />
         </p>
         <SystemNotification
-          heading="UNSUPPORTED VESSEL"
+          heading={systemConfig.unsupported.heading}
           className="max-w-md animate-flicker"
         >
           <p className="mb-3 font-heading text-sm tracking-[0.2em] text-foreground">
-            DISPLAY TOO SMALL TO MANIFEST THE SYSTEM
+            {systemConfig.unsupported.title}
           </p>
           <p className="text-sm text-muted-foreground">
-            This interface is a full desktop operating system and requires a
-            laptop or desktop terminal (≥ 1024px wide). Return through a larger
-            gate, Player.
+            {systemConfig.unsupported.body}
           </p>
         </SystemNotification>
         <p className="font-mono text-xs text-muted-foreground">
-          [ CONNECTION HELD · AWAITING SUITABLE HARDWARE ]
+          {systemConfig.unsupported.footer}
         </p>
       </div>
     );

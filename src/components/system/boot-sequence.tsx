@@ -3,24 +3,20 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Button } from "@/components/ui/button";
+import { systemConfig } from "@/config/system.config";
 import { sfx } from "@/lib/sfx";
 import { GlitchText } from "./glitch-text";
 import { TypewriterText } from "./typewriter-text";
 
 const SEEN_KEY = "system-boot-seen";
-
-const bootLines = [
-  "> INITIALIZING SYSTEM ...",
-  "> LOADING PLAYER DATA ... OK",
-  "> SYNCING AGENT NETWORK ... OK",
-  "> CONTEXT WINDOW ESTABLISHED",
-];
+const { lines: bootLines, notification, skipLabel } = systemConfig.boot;
 
 type Phase = "checking" | "booting" | "ready" | "done";
 
 export function BootSequence() {
   const [phase, setPhase] = useState<Phase>("checking");
   const [lineCount, setLineCount] = useState(0);
+  const [declined, setDeclined] = useState(false);
 
   useEffect(() => {
     const raf = requestAnimationFrame(() => {
@@ -37,10 +33,15 @@ export function BootSequence() {
     }
   }, [phase, lineCount]);
 
-  const enter = () => {
+  const accept = () => {
     sfx.enter();
     localStorage.setItem(SEEN_KEY, "1");
     setPhase("done");
+  };
+
+  const decline = () => {
+    sfx.deny();
+    setDeclined(true);
   };
 
   return (
@@ -79,31 +80,55 @@ export function BootSequence() {
                     className="system-frame animate-pulse-glow w-full max-w-md rounded-sm p-8 text-center"
                   >
                     <p className="mb-4 font-heading text-sm tracking-[0.35em] text-system text-glow">
-                      ⚠ NOTIFICATION
+                      ⚠ {notification.heading}
                     </p>
                     <p className="text-lg leading-relaxed text-foreground/90">
-                      You have entered the domain of the developer
+                      {notification.body}
                     </p>
                     <p className="my-3 font-heading text-2xl font-bold tracking-[0.2em] text-glow">
-                      <GlitchText text="[ CODEONYM ]" />
+                      <GlitchText text={notification.name} />
                     </p>
-                    <Button
-                      onClick={enter}
-                      className="mt-4 font-heading tracking-[0.3em]"
-                      size="lg"
-                    >
-                      ENTER
-                    </Button>
+                    <p className="font-heading text-sm tracking-[0.2em] text-foreground/80">
+                      {notification.question}
+                    </p>
+                    <div className="mt-5 flex items-center justify-center gap-3">
+                      <Button
+                        onClick={accept}
+                        className="font-heading tracking-[0.3em]"
+                        size="lg"
+                      >
+                        {notification.accept}
+                      </Button>
+                      <Button
+                        onClick={decline}
+                        variant="outline"
+                        size="lg"
+                        className="font-heading tracking-[0.3em] text-muted-foreground hover:border-destructive/50 hover:text-destructive"
+                      >
+                        {notification.decline}
+                      </Button>
+                    </div>
+                    <AnimatePresence>
+                      {declined && (
+                        <motion.p
+                          initial={{ opacity: 0, y: 4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="animate-flicker mt-4 font-mono text-xs tracking-wider text-destructive"
+                        >
+                          {notification.declineRejected}
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
                 )}
               </AnimatePresence>
 
               <button
                 type="button"
-                onClick={enter}
+                onClick={accept}
                 className="font-mono text-xs text-muted-foreground underline-offset-4 transition hover:text-foreground hover:underline"
               >
-                [ skip sequence ]
+                {skipLabel}
               </button>
             </>
           )}

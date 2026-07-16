@@ -1,5 +1,11 @@
 import type { SkillCategory } from "./types";
 
+/**
+ * ── SKILL TREE ────────────────────────────────────────────────
+ * Mastery levels are 0–100 and map to grades in the SKILLS window:
+ * ≥90 S · ≥85 A · ≥78 B · else C. Category icons map by name in
+ * skills-app.tsx — new categories fall back to a hexagon tile.
+ */
 export const skillCategories: SkillCategory[] = [
   {
     name: "AI Architectures & Principles",

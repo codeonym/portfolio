@@ -1,7 +1,7 @@
 "use client";
 
-import { Gem, Heart } from "lucide-react";
-import { player } from "@/data/player";
+import { player } from "@/config/player.config";
+import { systemConfig } from "@/config/system.config";
 import { useCountUp } from "@/hooks/use-count-up";
 import { GlitchText } from "@/components/system/glitch-text";
 import { StatBar } from "@/components/system/stat-bar";
@@ -35,7 +35,7 @@ export function StatusApp() {
         </div>
         <div className="space-y-0.5 text-sm text-muted-foreground">
           <p>
-            <span className="text-system">GUILD:</span> OpenSNZ-Technology
+            <span className="text-system">GUILD:</span> {player.guild}
           </p>
           <p>
             <span className="text-system">BASE:</span> {player.location}
@@ -48,22 +48,17 @@ export function StatusApp() {
       </div>
 
       <div className="space-y-3 border-y border-system/15 py-4">
-        <VitalBar
-          icon={Heart}
-          code="HP"
-          label="CONTEXT WINDOW"
-          reading="128K / 128K"
-          percent={100}
-          tone="ember"
-        />
-        <VitalBar
-          icon={Gem}
-          code="SP"
-          label="OUTPUT CAPACITY"
-          reading="32K / 32K"
-          percent={100}
-          tone="system"
-        />
+        {systemConfig.vitals.map((vital) => (
+          <VitalBar
+            key={vital.code}
+            icon={vital.icon}
+            code={vital.code}
+            label={vital.label}
+            reading={vital.reading}
+            percent={vital.percent}
+            tone={vital.tone}
+          />
+        ))}
       </div>
 
       <div className="space-y-3">

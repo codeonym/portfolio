@@ -1,11 +1,17 @@
 import type { Player } from "./types";
 
+/**
+ * ── PLAYER RECORD ─────────────────────────────────────────────
+ * Identity shown in STATUS, the avatar stage, the top bar and SUMMON.
+ * Stat values are 0–100; stat icons/colors map by `code` in stat-bar.tsx.
+ */
 export const player: Player = {
   name: "BOUAROUR AYOUB",
   handle: "codeonym",
   title: "Agentic Systems Developer",
   job: "AI Software Engineer",
   location: "Oujda, Morocco",
+  guild: "OpenSNZ-Technology",
   // months of XP since the journey began (2019)
   level: 82,
   profile: [

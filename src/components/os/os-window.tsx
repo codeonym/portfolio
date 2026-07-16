@@ -5,7 +5,7 @@ import { Minus, X } from "lucide-react";
 import { IconTile } from "@/components/system/icon-tile";
 import { sfx } from "@/lib/sfx";
 import type { RefObject } from "react";
-import { apps } from "@/data/apps";
+import { apps } from "@/config/apps.config";
 import type { OsWindow as OsWindowState } from "@/store/os-store";
 import { useOsStore } from "@/store/os-store";
 
@@ -31,10 +31,33 @@ export function OsWindow({ win, stageRef, children }: OsWindowProps) {
       dragConstraints={stageRef}
       dragMomentum={false}
       dragElastic={0}
-      initial={reduced ? false : { opacity: 0, scale: 0.92 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={reduced ? undefined : { opacity: 0, scale: 0.92 }}
-      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+      initial={
+        reduced
+          ? false
+          : {
+              opacity: 0,
+              scale: 0.94,
+              clipPath: "inset(46% 0% 46% 0%)",
+              filter: "brightness(1.8)",
+            }
+      }
+      animate={{
+        opacity: 1,
+        scale: 1,
+        clipPath: "inset(0% 0% 0% 0%)",
+        filter: "brightness(1)",
+      }}
+      exit={
+        reduced
+          ? undefined
+          : {
+              opacity: 0,
+              scale: 0.96,
+              clipPath: "inset(46% 0% 46% 0%)",
+              filter: "brightness(1.8)",
+            }
+      }
+      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
       onPointerDown={() => focus(win.id)}
       className="system-frame absolute rounded-sm"
       style={{
@@ -49,7 +72,11 @@ export function OsWindow({ win, stageRef, children }: OsWindowProps) {
       aria-label={def.title}
     >
       <div
-        onPointerDown={(e) => dragControls.start(e)}
+        onPointerDown={(e) => {
+          // stop native text selection from spilling into the window content
+          e.preventDefault();
+          dragControls.start(e);
+        }}
         className="flex cursor-grab touch-none items-center justify-between border-b border-system/25 bg-system/5 px-4 py-2 active:cursor-grabbing"
       >
         <span className="flex items-center gap-2.5 font-heading text-xs tracking-[0.3em] text-system select-none">

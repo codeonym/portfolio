@@ -1,13 +1,85 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Activity, MapPin, Volume2, VolumeX } from "lucide-react";
-import { player } from "@/data/player";
+import { cn } from "@/lib/utils";
+import { player } from "@/config/player.config";
+import { systemConfig } from "@/config/system.config";
 import { sfx } from "@/lib/sfx";
 import { useSoundStore } from "@/store/sound-store";
 
-/** XP toward next level — flavor, not real data */
-const XP_PROGRESS = 64;
+const XP_PROGRESS = systemConfig.xpProgress;
+
+/** Rotating status ticker — messages from systemConfig.ticker. */
+function Ticker() {
+  const [index, setIndex] = useState(0);
+  const reduced = useReducedMotion();
+
+  useEffect(() => {
+    const interval = setInterval(
+      () => setIndex((i) => (i + 1) % systemConfig.ticker.length),
+      5000,
+    );
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <span className="hidden items-center gap-2 font-mono text-xs text-muted-foreground xl:flex">
+      <Activity aria-hidden className="size-3.5 text-system" />
+      <span className="relative inline-block min-w-[26ch]">
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={index}
+            initial={reduced ? { opacity: 0 } : { opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduced ? { opacity: 0 } : { opacity: 0, y: -6 }}
+            transition={{ duration: 0.25 }}
+            className="inline-block"
+          >
+            {systemConfig.ticker[index]}
+          </motion.span>
+        </AnimatePresence>
+      </span>
+    </span>
+  );
+}
+
+/** Compact HP/SP readouts mirrored from systemConfig.vitals. */
+function MiniVitals() {
+  return (
+    <span className="hidden items-center gap-3 2xl:flex">
+      {systemConfig.vitals.map((vital) => (
+        <span key={vital.code} className="flex items-center gap-1.5">
+          <span
+            className={cn(
+              "font-heading text-[10px] tracking-widest",
+              vital.tone === "ember" ? "text-destructive" : "text-system",
+            )}
+          >
+            {vital.code}
+          </span>
+          <span
+            className="h-1 w-12 overflow-hidden rounded-full bg-secondary"
+            role="progressbar"
+            aria-label={vital.label}
+            aria-valuenow={vital.percent}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          >
+            <span
+              className={cn(
+                "block h-full rounded-full",
+                vital.tone === "ember" ? "bg-destructive" : "bg-system",
+              )}
+              style={{ width: `${vital.percent}%` }}
+            />
+          </span>
+        </span>
+      ))}
+    </span>
+  );
+}
 
 export function TopBar() {
   const [now, setNow] = useState<string | null>(null);
@@ -42,19 +114,17 @@ export function TopBar() {
         <span className="font-heading text-sm font-bold tracking-[0.3em] text-system text-glow">
           ◆ SYSTEM
         </span>
-        <span className="hidden items-center gap-2 font-mono text-xs text-muted-foreground xl:flex">
-          <Activity aria-hidden className="size-3.5 text-system" />
-          ALL AGENTS OPERATIONAL
-        </span>
+        <Ticker />
       </div>
 
       <div className="flex items-center gap-6">
+        <MiniVitals />
         <div className="flex items-center gap-3">
           <span className="font-heading text-xs tracking-widest text-system">
             LV.{player.level}
           </span>
           <div
-            className="h-1.5 w-28 overflow-hidden rounded-full bg-secondary"
+            className="xp-shimmer h-1.5 w-28 overflow-hidden rounded-full bg-secondary"
             role="progressbar"
             aria-label="XP to next level"
             aria-valuenow={XP_PROGRESS}

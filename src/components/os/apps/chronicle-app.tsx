@@ -1,5 +1,5 @@
 import { Medal } from "lucide-react";
-import { achievements, chronicle } from "@/data/chronicle";
+import { achievements, chronicle } from "@/config/chronicle.config";
 import { Badge } from "@/components/ui/badge";
 import { IconTile } from "@/components/system/icon-tile";
 

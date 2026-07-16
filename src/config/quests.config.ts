@@ -1,5 +1,11 @@
 import type { Quest } from "./types";
 
+/**
+ * ── QUEST LOG ─────────────────────────────────────────────────
+ * Projects framed as quests. rank: "S" | "A" | "B" (drives glow color),
+ * type: "main" | "side", status: "cleared" | "ongoing".
+ * `rewards` are the tech-stack badges shown in the detail view.
+ */
 export const quests: Quest[] = [
   {
     id: "pharma-mas",

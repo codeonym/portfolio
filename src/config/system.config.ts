@@ -1,0 +1,126 @@
+import { Gem, Heart } from "lucide-react";
+import type { SystemConfig } from "./types";
+
+/**
+ * ── SYSTEM SETTINGS ───────────────────────────────────────────
+ * Every piece of UI copy and ambience tuning in one place: boot
+ * sequence, notifications, ticker, log stream, vitals, XP.
+ * Edit freely — the types in ./types.ts keep the UI safe.
+ */
+export const systemConfig: SystemConfig = {
+  version: "3.0",
+  xpProgress: 64,
+
+  vitals: [
+    {
+      code: "HP",
+      label: "CONTEXT WINDOW",
+      reading: "128K / 128K",
+      percent: 100,
+      tone: "ember",
+      icon: Heart,
+    },
+    {
+      code: "SP",
+      label: "OUTPUT CAPACITY",
+      reading: "32K / 32K",
+      percent: 100,
+      tone: "system",
+      icon: Gem,
+    },
+  ],
+
+  boot: {
+    lines: [
+      "> SCANNING VESSEL .................. OK",
+      "> ESTABLISHING MANA LINK ........... OK",
+      "> LOADING PLAYER RECORD ............ LV.82",
+      "> SYNCING AGENT NETWORK ............ 6/6 AGENTS ONLINE",
+      "> CALIBRATING CONTEXT WINDOW ....... 128K TOKENS",
+    ],
+    notification: {
+      heading: "NOTIFICATION",
+      body: "You have acquired the qualifications to enter the domain of the Player.",
+      question: "Will you accept?",
+      name: "[ CODEONYM ]",
+      accept: "ACCEPT",
+      decline: "DECLINE",
+      declineRejected: "⚠ REFUSAL IS NOT RECOGNIZED BY THE SYSTEM",
+    },
+    skipLabel: "[ skip sequence ]",
+  },
+
+  ticker: [
+    "ALL AGENTS OPERATIONAL",
+    "MANA FLOW STABLE",
+    "6 AGENTS ON PATROL",
+    "NO ANOMALIES DETECTED",
+    "GATE SCAN: 5 QUESTS ON RECORD",
+    "CONTEXT INTEGRITY 100%",
+  ],
+
+  eventIntervalMs: 26000,
+  ambientEvents: [
+    {
+      heading: "QUEST UPDATE",
+      body: "Daily quest [ SHIP SOMETHING GREAT ] is in progress.",
+      tone: "system",
+    },
+    {
+      heading: "SKILL PROFICIENCY",
+      body: "Passive skill [ CONTEXT ENGINEERING ] increased by +1.",
+      tone: "arcane",
+    },
+    {
+      heading: "DUNGEON SCAN",
+      body: "New S-rank gate detected: multi-agent orchestration.",
+      tone: "gold",
+    },
+    {
+      heading: "PARTY REQUEST",
+      body: "A visitor wishes to form a party. Open [ SUMMON ] to respond.",
+      tone: "system",
+    },
+    {
+      heading: "MANA SURGE",
+      body: "Prompt cache warmed. Inference latency -34%.",
+      tone: "arcane",
+    },
+    {
+      heading: "GUILD TRANSMISSION",
+      body: "OpenSNZ-Technology: agent fleet reporting nominal.",
+      tone: "system",
+    },
+    {
+      heading: "TITLE VERIFIED",
+      body: "Title [ AGENTIC SYSTEMS DEVELOPER ] resonates with the vessel.",
+      tone: "gold",
+    },
+  ],
+
+  logLines: [
+    "spawn agent.worker#04 .......... ok",
+    "ctx.window 128K ............ nominal",
+    "mcp: 3 servers connected",
+    "rag.index refreshed (Δ128 docs)",
+    "langgraph: checkpoint saved",
+    "traces exported → otel collector",
+    "guardrail: output check passed",
+    "queue: 0 pending quests",
+    "heartbeat <ping> 12ms",
+    "memory.graph +2 nodes linked",
+    "copilotkit: ag-ui channel open",
+    "mana.regen +5/s (idle bonus)",
+  ],
+
+  avatarCaption: "[ AWAITING AVATAR SYNC ... ]",
+  dockFooter: "SYSTEM v3.0 · forged by codeonym · AI integration awakening soon",
+
+  unsupported: {
+    error: "⚠ SYSTEM ERROR",
+    heading: "UNSUPPORTED VESSEL",
+    title: "DISPLAY TOO SMALL TO MANIFEST THE SYSTEM",
+    body: "This interface is a full desktop operating system and requires a laptop or desktop terminal (≥ 1024px wide). Return through a larger gate, Player.",
+    footer: "[ CONNECTION HELD · AWAITING SUITABLE HARDWARE ]",
+  },
+};

@@ -1,5 +1,6 @@
 import { Bot } from "lucide-react";
-import { player } from "@/data/player";
+import { player } from "@/config/player.config";
+import { systemConfig } from "@/config/system.config";
 import { TypewriterText } from "@/components/system/typewriter-text";
 
 /**
@@ -19,11 +20,12 @@ export function AvatarStage() {
         <div className="absolute inset-6 animate-spin rounded-full border border-arcane/25 border-b-arcane/70 [animation-direction:reverse] [animation-duration:10s]" />
         <div className="absolute inset-12 animate-spin rounded-full border border-dashed border-system/20 [animation-duration:24s]" />
         <div className="animate-pulse-glow flex size-36 items-center justify-center rounded-full bg-system/5">
-          <Bot
-            className="size-20 text-system/50"
-            strokeWidth={1}
-          />
+          <div className="animate-[float-y_6s_ease-in-out_infinite]">
+            <Bot className="size-20 text-system/50" strokeWidth={1} />
+          </div>
         </div>
+        {/* scanning beam sweeping the hologram */}
+        <div className="absolute inset-x-8 h-px animate-[scan-y_5s_linear_infinite] bg-gradient-to-r from-transparent via-system/70 to-transparent" />
         {/* base glow */}
         <div className="absolute -bottom-8 left-1/2 h-6 w-48 -translate-x-1/2 rounded-[100%] bg-system/20 blur-xl" />
       </div>
@@ -36,7 +38,7 @@ export function AvatarStage() {
           {player.title.toUpperCase()}
         </p>
         <p className="mt-4 font-mono text-xs text-muted-foreground">
-          <TypewriterText text="[ AWAITING AVATAR SYNC ... ]" speed={45} />
+          <TypewriterText text={systemConfig.avatarCaption} speed={45} />
         </p>
       </div>
     </div>
