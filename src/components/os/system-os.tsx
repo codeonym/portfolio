@@ -4,8 +4,10 @@ import { useEffect, useRef } from "react";
 import { AnimatePresence } from "motion/react";
 import type { AppId } from "@/config/apps.config";
 import { useOsStore } from "@/store/os-store";
+import { AmbientEvents } from "./ambient-events";
 import { AvatarStage } from "./avatar-stage";
 import { Dock } from "./dock";
+import { SystemLog } from "./system-log";
 import { OsWindow } from "./os-window";
 import { TopBar } from "./top-bar";
 import { ChronicleApp } from "./apps/chronicle-app";
@@ -51,6 +53,8 @@ export function SystemOS() {
       <TopBar />
       <div ref={stageRef} className="relative flex-1">
         <AvatarStage />
+        <SystemLog />
+        <AmbientEvents />
         <AnimatePresence>
           {windows.map((win) => {
             const App = appComponents[win.id];

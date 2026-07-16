@@ -183,6 +183,24 @@
     );
   }
 
+  /* light sweep across gauge fills (XP bar) */
+  .xp-shimmer {
+    position: relative;
+  }
+  .xp-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      105deg,
+      transparent 25%,
+      oklch(1 0 0 / 22%) 50%,
+      transparent 75%
+    );
+    transform: translateX(-100%);
+    animation: shimmer 3.2s ease-in-out infinite;
+  }
+
   .glitch {
     position: relative;
   }
@@ -247,6 +265,12 @@
   }
 }
 
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
 @keyframes blink {
   0%,
   100% {
@@ -285,6 +309,9 @@
     content: none;
   }
   .scanlines::before {
+    content: none;
+  }
+  .xp-shimmer::after {
     content: none;
   }
 }

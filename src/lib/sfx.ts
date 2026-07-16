@@ -75,6 +75,16 @@ export const sfx = {
   hover() {
     tone({ freq: 1900, duration: 0.02, type: "sine", gain: 0.01 });
   },
+  /** ambient System notification chime */
+  notify() {
+    tone({ freq: 880, duration: 0.09, type: "sine", gain: 0.03 });
+    tone({ freq: 1174, duration: 0.14, type: "sine", gain: 0.025, when: 0.08 });
+  },
+  /** the System rejects an action */
+  deny() {
+    tone({ freq: 220, endFreq: 160, duration: 0.18, type: "sawtooth", gain: 0.03 });
+    tone({ freq: 110, duration: 0.12, type: "square", gain: 0.02, when: 0.02 });
+  },
   /** entering the System */
   enter() {
     tone({ freq: 523, duration: 0.12, gain: 0.055 });
