@@ -9,6 +9,7 @@ import { Dock } from "./dock";
 import { OsWindow } from "./os-window";
 import { TopBar } from "./top-bar";
 import { ChronicleApp } from "./apps/chronicle-app";
+import { InventoryApp } from "./apps/inventory-app";
 import { QuestsApp } from "./apps/quests-app";
 import { SkillsApp } from "./apps/skills-app";
 import { StatusApp } from "./apps/status-app";
@@ -18,6 +19,7 @@ const appComponents: Record<AppId, React.ComponentType> = {
   status: StatusApp,
   quests: QuestsApp,
   skills: SkillsApp,
+  inventory: InventoryApp,
   chronicle: ChronicleApp,
   summon: SummonApp,
 };

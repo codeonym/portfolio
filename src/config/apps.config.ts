@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import {
+  Backpack,
   Brain,
   Gauge,
   SatelliteDish,
@@ -17,6 +18,7 @@ export type AppId =
   | "status"
   | "quests"
   | "skills"
+  | "inventory"
   | "chronicle"
   | "summon";
 
@@ -50,6 +52,13 @@ export const apps: Record<AppId, AppDefinition> = {
     icon: Brain,
     defaultPosition: { x: 680, y: 70 },
     width: 640,
+  },
+  inventory: {
+    id: "inventory",
+    title: "INVENTORY",
+    icon: Backpack,
+    defaultPosition: { x: 600, y: 60 },
+    width: 680,
   },
   chronicle: {
     id: "chronicle",
