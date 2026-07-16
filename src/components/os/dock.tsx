@@ -25,7 +25,7 @@ export function Dock() {
               }}
               onMouseEnter={() => sfx.hover()}
               className={cn(
-                "group relative flex items-center gap-2 rounded-sm border border-transparent px-3 py-1.5 font-heading text-xs tracking-[0.2em] transition",
+                "group relative flex items-center gap-2 rounded-sm border border-transparent px-3 py-1.5 font-heading text-xs tracking-[0.2em] transition hover:-translate-y-0.5",
                 win
                   ? "border-system/30 bg-system/10 text-system"
                   : "text-muted-foreground hover:border-system/20 hover:text-foreground",

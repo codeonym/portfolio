@@ -31,10 +31,33 @@ export function OsWindow({ win, stageRef, children }: OsWindowProps) {
       dragConstraints={stageRef}
       dragMomentum={false}
       dragElastic={0}
-      initial={reduced ? false : { opacity: 0, scale: 0.92 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={reduced ? undefined : { opacity: 0, scale: 0.92 }}
-      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+      initial={
+        reduced
+          ? false
+          : {
+              opacity: 0,
+              scale: 0.94,
+              clipPath: "inset(46% 0% 46% 0%)",
+              filter: "brightness(1.8)",
+            }
+      }
+      animate={{
+        opacity: 1,
+        scale: 1,
+        clipPath: "inset(0% 0% 0% 0%)",
+        filter: "brightness(1)",
+      }}
+      exit={
+        reduced
+          ? undefined
+          : {
+              opacity: 0,
+              scale: 0.96,
+              clipPath: "inset(46% 0% 46% 0%)",
+              filter: "brightness(1.8)",
+            }
+      }
+      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
       onPointerDown={() => focus(win.id)}
       className="system-frame absolute rounded-sm"
       style={{
