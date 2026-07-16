@@ -1,0 +1,290 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-rajdhani);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-michroma);
+  --font-display: var(--font-michroma);
+  --color-system: var(--system);
+  --color-system-dim: var(--system-dim);
+  --color-arcane: var(--arcane);
+  --color-rank-s: var(--rank-s);
+  --color-rank-a: var(--rank-a);
+  --color-rank-b: var(--rank-b);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  --animate-scanline: scanline 8s linear infinite;
+  --animate-flicker: flicker 4s linear infinite;
+  --animate-pulse-glow: pulse-glow 2.4s ease-in-out infinite;
+  --animate-blink: blink 1s step-end infinite;
+}
+
+/* The System is dark by nature — a single dark theme. */
+:root {
+  --system: oklch(0.72 0.14 235);
+  --system-dim: oklch(0.72 0.14 235 / 40%);
+  --arcane: oklch(0.6 0.21 295);
+  --rank-s: oklch(0.78 0.15 85);
+  --rank-a: oklch(0.6 0.21 295);
+  --rank-b: oklch(0.72 0.14 235);
+
+  --background: oklch(0.14 0.025 262);
+  --foreground: oklch(0.93 0.015 240);
+  --card: oklch(0.18 0.03 260);
+  --card-foreground: oklch(0.93 0.015 240);
+  --popover: oklch(0.16 0.03 260);
+  --popover-foreground: oklch(0.93 0.015 240);
+  --primary: var(--system);
+  --primary-foreground: oklch(0.13 0.03 260);
+  --secondary: oklch(0.24 0.04 262);
+  --secondary-foreground: oklch(0.93 0.015 240);
+  --muted: oklch(0.22 0.03 260);
+  --muted-foreground: oklch(0.68 0.03 245);
+  --accent: oklch(0.26 0.06 280);
+  --accent-foreground: oklch(0.93 0.015 240);
+  --destructive: oklch(0.6 0.22 25);
+  --border: oklch(0.72 0.14 235 / 22%);
+  --input: oklch(0.72 0.14 235 / 18%);
+  --ring: var(--system);
+  --chart-1: var(--system);
+  --chart-2: var(--arcane);
+  --chart-3: oklch(0.78 0.15 85);
+  --chart-4: oklch(0.68 0.03 245);
+  --chart-5: oklch(0.45 0.1 262);
+  --radius: 0.25rem;
+  --sidebar: oklch(0.16 0.03 260);
+  --sidebar-foreground: oklch(0.93 0.015 240);
+  --sidebar-primary: var(--system);
+  --sidebar-primary-foreground: oklch(0.13 0.03 260);
+  --sidebar-accent: oklch(0.24 0.04 262);
+  --sidebar-accent-foreground: oklch(0.93 0.015 240);
+  --sidebar-border: oklch(0.72 0.14 235 / 22%);
+  --sidebar-ring: var(--system);
+}
+
+.dark {
+  /* dark-only site: same tokens as :root, kept so `dark:` variants resolve */
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    text-rendering: optimizeLegibility;
+  }
+  html {
+    @apply font-sans scroll-smooth;
+  }
+  ::selection {
+    background: oklch(0.72 0.14 235 / 30%);
+  }
+}
+
+@layer components {
+  /* HUD frame: glowing border + corner brackets, used by SystemPanel */
+  .system-frame {
+    position: relative;
+    border: 1px solid var(--border);
+    background:
+      linear-gradient(oklch(0.18 0.03 260 / 85%), oklch(0.16 0.03 262 / 92%));
+    box-shadow:
+      0 0 12px oklch(0.72 0.14 235 / 12%),
+      inset 0 0 24px oklch(0.72 0.14 235 / 5%);
+    backdrop-filter: blur(6px);
+  }
+  .system-frame::before,
+  .system-frame::after {
+    content: "";
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-color: var(--system);
+    border-style: solid;
+    pointer-events: none;
+  }
+  .system-frame::before {
+    top: -1px;
+    left: -1px;
+    border-width: 2px 0 0 2px;
+  }
+  .system-frame::after {
+    bottom: -1px;
+    right: -1px;
+    border-width: 0 2px 2px 0;
+  }
+
+  .text-glow {
+    text-shadow:
+      0 0 8px oklch(0.72 0.14 235 / 60%),
+      0 0 24px oklch(0.72 0.14 235 / 30%);
+  }
+  .text-glow-arcane {
+    text-shadow:
+      0 0 8px oklch(0.6 0.21 295 / 60%),
+      0 0 24px oklch(0.6 0.21 295 / 30%);
+  }
+
+  /* full-viewport CRT scanline overlay */
+  .scanlines::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 2px,
+      oklch(0 0 0 / 6%) 3px,
+      transparent 4px
+    );
+  }
+
+  .glitch {
+    position: relative;
+  }
+  .glitch::before,
+  .glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    clip-path: inset(50% 0 50% 0);
+  }
+  .glitch::before {
+    color: var(--system);
+    animation: glitch-slice 3s steps(2, end) infinite;
+    transform: translateX(-2px);
+  }
+  .glitch::after {
+    color: var(--arcane);
+    animation: glitch-slice 3.1s steps(2, end) infinite reverse;
+    transform: translateX(2px);
+  }
+}
+
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 1;
+  }
+  93% {
+    opacity: 0.6;
+  }
+  94% {
+    opacity: 1;
+  }
+  97% {
+    opacity: 0.8;
+  }
+  98% {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 12px oklch(0.72 0.14 235 / 15%);
+  }
+  50% {
+    box-shadow: 0 0 24px oklch(0.72 0.14 235 / 40%);
+  }
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes glitch-slice {
+  0% {
+    clip-path: inset(20% 0 61% 0);
+  }
+  20% {
+    clip-path: inset(92% 0 1% 0);
+  }
+  40% {
+    clip-path: inset(43% 0 40% 0);
+  }
+  60% {
+    clip-path: inset(25% 0 58% 0);
+  }
+  80% {
+    clip-path: inset(54% 0 7% 0);
+  }
+  100% {
+    clip-path: inset(58% 0 43% 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glitch::before,
+  .glitch::after {
+    animation: none;
+    content: none;
+  }
+  .scanlines::before {
+    content: none;
+  }
+}
