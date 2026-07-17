@@ -8,7 +8,7 @@ import type { SystemConfig } from "./types";
  * Edit freely — the types in ./types.ts keep the UI safe.
  */
 export const systemConfig: SystemConfig = {
-  version: "3.0",
+  version: "4.0",
   xpProgress: 64,
 
   vitals: [
@@ -37,6 +37,7 @@ export const systemConfig: SystemConfig = {
       "> LOADING PLAYER RECORD ............ LV.82",
       "> SYNCING AGENT NETWORK ............ 6/6 AGENTS ONLINE",
       "> CALIBRATING CONTEXT WINDOW ....... 128K TOKENS",
+      "> IGNITING RENDER CORE ............. WEBGL ONLINE",
     ],
     notification: {
       heading: "NOTIFICATION",
@@ -111,10 +112,11 @@ export const systemConfig: SystemConfig = {
     "memory.graph +2 nodes linked",
     "copilotkit: ag-ui channel open",
     "mana.regen +5/s (idle bonus)",
+    "render.core 60fps ........ hologram",
   ],
 
-  avatarCaption: "[ AWAITING AVATAR SYNC ... ]",
-  dockFooter: "SYSTEM v3.0 · forged by codeonym · AI integration awakening soon",
+  avatarCaption: "[ MANA CORE PROJECTED · AVATAR SYNC IN PROGRESS ]",
+  dockFooter: "SYSTEM v4.0 · forged by codeonym · AI integration awakening soon",
 
   unsupported: {
     error: "⚠ SYSTEM ERROR",
