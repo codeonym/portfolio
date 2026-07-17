@@ -15,7 +15,9 @@ export function AvatarStage() {
     >
       <div className="size-72" />
 
-      <div className="text-center">
+      <div className="relative text-center">
+        {/* dark halo lifts the caption off the busy wireframe behind it */}
+        <div className="absolute -inset-x-12 -inset-y-8 -z-10 rounded-full bg-background/60 blur-2xl" />
         <p className="font-heading text-2xl font-bold tracking-[0.25em] text-foreground/90 text-glow">
           {player.name}
         </p>

@@ -48,7 +48,7 @@ export function SystemLog() {
   return (
     <div
       aria-hidden
-      className="pointer-events-none absolute right-4 bottom-3 z-10 w-80 font-mono text-[10px] leading-relaxed"
+      className="pointer-events-none absolute right-4 bottom-3 z-10 w-80 rounded-sm bg-background/55 px-3 py-2 font-mono text-[10px] leading-relaxed backdrop-blur-sm"
     >
       <p className="mb-1 font-heading text-[9px] tracking-[0.35em] text-system/70">
         ◆ SYSTEM LOG

@@ -8,7 +8,7 @@ import type { SystemConfig } from "./types";
  * Edit freely — the types in ./types.ts keep the UI safe.
  */
 export const systemConfig: SystemConfig = {
-  version: "4.0",
+  version: "4.1",
   xpProgress: 64,
 
   vitals: [
@@ -116,7 +116,7 @@ export const systemConfig: SystemConfig = {
   ],
 
   avatarCaption: "[ MANA CORE PROJECTED · AVATAR SYNC IN PROGRESS ]",
-  dockFooter: "SYSTEM v4.0 · forged by codeonym · AI integration awakening soon",
+  dockFooter: "SYSTEM v4.1 · forged by codeonym · AI integration awakening soon",
 
   unsupported: {
     error: "⚠ SYSTEM ERROR",
