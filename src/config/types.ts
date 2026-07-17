@@ -144,11 +144,16 @@ export interface SystemConfig {
   /** avatar hologram caption */
   avatarCaption: string;
   dockFooter: string;
-  unsupported: {
-    error: string;
-    heading: string;
-    title: string;
-    body: string;
-    footer: string;
-  };
+  unsupported: SystemScreenCopy;
+  runtimeError: SystemScreenCopy & { retry: string };
+  notFound: SystemScreenCopy & { cta: string };
+}
+
+/** Copy for a full-viewport System interrupt screen (device gate, crash, 404). */
+export interface SystemScreenCopy {
+  error: string;
+  heading: string;
+  title: string;
+  body: string;
+  footer: string;
 }

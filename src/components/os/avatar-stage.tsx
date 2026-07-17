@@ -16,6 +16,8 @@ export function AvatarStage() {
     >
       {/* hologram slot — future R3F canvas mounts here */}
       <div className="relative flex size-72 items-center justify-center">
+        {/* ambient arcane aura radiating from behind the hologram */}
+        <div className="animate-aura-pulse absolute -inset-10 -z-10 rounded-full bg-arcane/15 blur-3xl" />
         <div className="absolute inset-0 animate-spin rounded-full border border-system/30 border-t-system/80 [animation-duration:14s]" />
         <div className="absolute inset-6 animate-spin rounded-full border border-arcane/25 border-b-arcane/70 [animation-direction:reverse] [animation-duration:10s]" />
         <div className="absolute inset-12 animate-spin rounded-full border border-dashed border-system/20 [animation-duration:24s]" />

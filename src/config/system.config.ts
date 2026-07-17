@@ -123,4 +123,22 @@ export const systemConfig: SystemConfig = {
     body: "This interface is a full desktop operating system and requires a laptop or desktop terminal (≥ 1024px wide). Return through a larger gate, Player.",
     footer: "[ CONNECTION HELD · AWAITING SUITABLE HARDWARE ]",
   },
+
+  runtimeError: {
+    error: "⚠ CRITICAL FAULT",
+    heading: "SYSTEM CRASH",
+    title: "AN UNEXPECTED FAULT INTERRUPTED THE SYSTEM",
+    body: "The connection destabilized mid-render. This has been logged — attempt a reconnect, Player.",
+    footer: "[ VESSEL INTACT · SYSTEM RECOVERABLE ]",
+    retry: "RE-ESTABLISH LINK",
+  },
+
+  notFound: {
+    error: "⚠ SIGNAL LOST",
+    heading: "SECTOR NOT FOUND",
+    title: "THIS GATE LEADS NOWHERE",
+    body: "The coordinates you followed don't resolve to a sector within the System. It may have been sealed or never existed.",
+    footer: "[ NAVIGATION FAILED · NO ACTIVE GATE ]",
+    cta: "RETURN TO STAGE",
+  },
 };

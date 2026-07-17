@@ -5,7 +5,7 @@ import { AnimatePresence } from "motion/react";
 import type { AppId } from "@/config/apps.config";
 import { appList } from "@/config/apps.config";
 import { sfx } from "@/lib/sfx";
-import { useOsStore } from "@/store/os-store";
+import { topVisibleWindow, useOsStore } from "@/store/os-store";
 import { AmbientEvents } from "./ambient-events";
 import { AvatarStage } from "./avatar-stage";
 import { Dock } from "./dock";
@@ -58,11 +58,19 @@ export function SystemOS() {
     return () => window.removeEventListener("keydown", onKey);
   }, [closeTop, open]);
 
+  // topmost visible window gets the arcane "focused" aura
+  const topWindowId = topVisibleWindow(windows)?.id;
+
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
       <TopBar />
       <div ref={stageRef} className="relative flex-1">
         <div aria-hidden className="hex-grid absolute inset-0" />
+        {/* faint arcane aura pulsing at the stage edges */}
+        <div
+          aria-hidden
+          className="animate-aura-pulse pointer-events-none absolute inset-0 [animation-duration:9s] [background:radial-gradient(ellipse_at_center,transparent_55%,oklch(0.6_0.21_295/12%)_100%)]"
+        />
         <StageChrome />
         <AvatarStage />
         <SystemLog />
@@ -70,8 +78,14 @@ export function SystemOS() {
         <AnimatePresence>
           {windows.map((win) => {
             const App = appComponents[win.id];
+            const focused = win.id === topWindowId;
             return (
-              <OsWindow key={win.id} win={win} stageRef={stageRef}>
+              <OsWindow
+                key={win.id}
+                win={win}
+                stageRef={stageRef}
+                focused={focused}
+              >
                 <App />
               </OsWindow>
             );

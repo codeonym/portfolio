@@ -17,12 +17,15 @@ function Ticker() {
   const reduced = useReducedMotion();
 
   useEffect(() => {
+    if (systemConfig.ticker.length < 2) return;
     const interval = setInterval(
       () => setIndex((i) => (i + 1) % systemConfig.ticker.length),
       5000,
     );
     return () => clearInterval(interval);
   }, []);
+
+  if (systemConfig.ticker.length === 0) return null;
 
   return (
     <span className="hidden items-center gap-2 font-mono text-xs text-muted-foreground xl:flex">

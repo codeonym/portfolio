@@ -8,14 +8,17 @@ import type { RefObject } from "react";
 import { apps } from "@/config/apps.config";
 import type { OsWindow as OsWindowState } from "@/store/os-store";
 import { useOsStore } from "@/store/os-store";
+import { cn } from "@/lib/utils";
 
 interface OsWindowProps {
   win: OsWindowState;
   stageRef: RefObject<HTMLDivElement | null>;
   children: React.ReactNode;
+  /** topmost visible window — gets the arcane aura instead of the ambient blue glow */
+  focused?: boolean;
 }
 
-export function OsWindow({ win, stageRef, children }: OsWindowProps) {
+export function OsWindow({ win, stageRef, children, focused }: OsWindowProps) {
   const def = apps[win.id];
   const focus = useOsStore((s) => s.focus);
   const close = useOsStore((s) => s.close);
@@ -59,7 +62,10 @@ export function OsWindow({ win, stageRef, children }: OsWindowProps) {
       }
       transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
       onPointerDown={() => focus(win.id)}
-      className="system-frame absolute rounded-sm"
+      className={cn(
+        "system-frame absolute rounded-sm transition-[border-color,box-shadow]",
+        focused && "system-frame--focused",
+      )}
       style={{
         left: `min(${win.x}px, calc(100vw - ${def.width}px - 24px))`,
         top: win.y,
@@ -77,9 +83,19 @@ export function OsWindow({ win, stageRef, children }: OsWindowProps) {
           e.preventDefault();
           dragControls.start(e);
         }}
-        className="flex cursor-grab touch-none items-center justify-between border-b border-system/25 bg-system/5 px-4 py-2 active:cursor-grabbing"
+        className={cn(
+          "flex cursor-grab touch-none items-center justify-between border-b px-4 py-2 transition-colors active:cursor-grabbing",
+          focused
+            ? "border-arcane/30 bg-arcane/10"
+            : "border-system/25 bg-system/5",
+        )}
       >
-        <span className="flex items-center gap-2.5 font-heading text-xs tracking-[0.3em] text-system select-none">
+        <span
+          className={cn(
+            "flex items-center gap-2.5 font-heading text-xs tracking-[0.3em] select-none transition-colors",
+            focused ? "text-arcane" : "text-system",
+          )}
+        >
           <IconTile icon={def.icon} size="sm" />
           {def.title}
         </span>
