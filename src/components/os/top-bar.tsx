@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { Activity, MapPin, Volume2, VolumeX } from "lucide-react";
+import { Activity, MapPin, Maximize, Minimize, Volume2, VolumeX } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { player } from "@/config/player.config";
 import { systemConfig } from "@/config/system.config";
+import { toggleFullscreen, useFullscreen } from "@/hooks/use-fullscreen";
 import { sfx } from "@/lib/sfx";
 import { useSoundStore } from "@/store/sound-store";
 
@@ -89,6 +90,7 @@ export function TopBar() {
   const muted = useSoundStore((s) => s.muted);
   const toggleMuted = useSoundStore((s) => s.toggle);
   const initSound = useSoundStore((s) => s.init);
+  const fullscreen = useFullscreen();
 
   useEffect(() => {
     initSound();
@@ -148,6 +150,24 @@ export function TopBar() {
           <MapPin aria-hidden className="size-3.5 text-system" />
           {player.location.toUpperCase()}
         </span>
+
+        <button
+          type="button"
+          aria-label={
+            fullscreen ? "Exit immersion mode" : "Enter immersion mode (F)"
+          }
+          onClick={() => {
+            sfx.click();
+            toggleFullscreen();
+          }}
+          className="flex size-7 items-center justify-center rounded-sm text-muted-foreground transition hover:bg-system/15 hover:text-system"
+        >
+          {fullscreen ? (
+            <Minimize className="size-4" />
+          ) : (
+            <Maximize className="size-4" />
+          )}
+        </button>
 
         <button
           type="button"
