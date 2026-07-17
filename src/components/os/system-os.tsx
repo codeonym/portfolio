@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { AnimatePresence } from "motion/react";
 import type { AppId } from "@/config/apps.config";
 import { appList } from "@/config/apps.config";
+import { toggleFullscreen } from "@/hooks/use-fullscreen";
 import { sfx } from "@/lib/sfx";
 import { topVisibleWindow, useOsStore } from "@/store/os-store";
 import { AmbientEvents } from "./ambient-events";
@@ -46,8 +47,10 @@ export function SystemOS() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") return closeTop();
-      // hotkeys 1–6 launch apps, game style
       if (e.metaKey || e.ctrlKey || e.altKey) return;
+      // F toggles immersion mode (Esc always exits, courtesy of the browser)
+      if (e.key === "f" || e.key === "F") return toggleFullscreen();
+      // hotkeys 1–6 launch apps, game style
       const slot = Number.parseInt(e.key, 10) - 1;
       if (slot >= 0 && slot < appList.length) {
         sfx.open();

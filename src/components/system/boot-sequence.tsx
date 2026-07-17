@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { systemConfig } from "@/config/system.config";
+import { enterFullscreen } from "@/hooks/use-fullscreen";
 import { sfx } from "@/lib/sfx";
 import { GlitchText } from "./glitch-text";
 import { TypewriterText } from "./typewriter-text";
@@ -35,6 +36,8 @@ export function BootSequence() {
 
   const accept = () => {
     sfx.enter();
+    // the click doubles as the user gesture fullscreen requires
+    enterFullscreen();
     localStorage.setItem(SEEN_KEY, "1");
     setPhase("done");
   };
