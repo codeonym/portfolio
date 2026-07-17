@@ -175,7 +175,9 @@ export function OsWindow({ win, stageRef, children, focused }: OsWindowProps) {
               </button>
             </span>
           </div>
-          <div className="max-h-[62vh] overflow-y-auto p-5">{children}</div>
+          <div data-window-scroll className="max-h-[62vh] overflow-y-auto p-5">
+            {children}
+          </div>
         </div>
       </motion.div>
     </motion.div>
