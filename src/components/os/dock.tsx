@@ -3,12 +3,13 @@
 import { appList } from "@/config/apps.config";
 import { systemConfig } from "@/config/system.config";
 import { sfx } from "@/lib/sfx";
-import { useOsStore } from "@/store/os-store";
+import { topVisibleWindow, useOsStore } from "@/store/os-store";
 import { cn } from "@/lib/utils";
 
 export function Dock() {
   const windows = useOsStore((s) => s.windows);
   const open = useOsStore((s) => s.open);
+  const topWindowId = topVisibleWindow(windows)?.id;
 
   return (
     <footer className="z-40 flex items-center justify-between gap-4 border-t border-system/25 bg-background/85 px-5 py-2 backdrop-blur-md">
@@ -47,7 +48,11 @@ export function Dock() {
                 aria-hidden
                 className={cn(
                   "absolute -bottom-px left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-full transition",
-                  win && !win.minimized && "bg-system shadow-[0_0_6px_var(--system)]",
+                  win &&
+                    !win.minimized &&
+                    (app.id === topWindowId
+                      ? "bg-arcane shadow-[0_0_6px_var(--arcane)]"
+                      : "bg-system shadow-[0_0_6px_var(--system)]"),
                   win?.minimized && "bg-system/40",
                 )}
               />

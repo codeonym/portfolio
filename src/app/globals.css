@@ -57,6 +57,7 @@
   --animate-flicker: flicker 4s linear infinite;
   --animate-pulse-glow: pulse-glow 2.4s ease-in-out infinite;
   --animate-blink: blink 1s step-end infinite;
+  --animate-aura-pulse: aura-pulse 5s ease-in-out infinite;
 }
 
 /* The System is dark by nature — a single dark theme. */
@@ -154,6 +155,18 @@
     bottom: -1px;
     right: -1px;
     border-width: 0 2px 2px 0;
+  }
+
+  /* focused/topmost window: swap the ambient glow to the arcane aura */
+  .system-frame--focused {
+    border-color: oklch(0.6 0.21 295 / 45%);
+    box-shadow:
+      0 0 20px oklch(0.6 0.21 295 / 28%),
+      inset 0 0 28px oklch(0.6 0.21 295 / 8%);
+  }
+  .system-frame--focused::before,
+  .system-frame--focused::after {
+    border-color: var(--arcane);
   }
 
   .text-glow {
@@ -277,6 +290,16 @@
   }
 }
 
+@keyframes aura-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 @keyframes float-y {
   0%,
   100% {
@@ -350,5 +373,9 @@
   .animate-\[float-y_6s_ease-in-out_infinite\],
   .animate-\[scan-y_5s_linear_infinite\] {
     animation: none;
+  }
+  .animate-aura-pulse {
+    animation: none;
+    opacity: 0.6;
   }
 }

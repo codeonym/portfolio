@@ -10,6 +10,13 @@ export interface OsWindow {
   minimized: boolean;
 }
 
+/** Topmost non-minimized window, or undefined when the stage is empty. */
+export function topVisibleWindow(windows: OsWindow[]): OsWindow | undefined {
+  const visible = windows.filter((w) => !w.minimized);
+  if (visible.length === 0) return undefined;
+  return visible.reduce((a, b) => (a.z > b.z ? a : b));
+}
+
 interface OsState {
   windows: OsWindow[];
   zCounter: number;
@@ -75,9 +82,8 @@ export const useOsStore = create<OsState>((set) => ({
 
   closeTop: () =>
     set((s) => {
-      const visible = s.windows.filter((w) => !w.minimized);
-      if (visible.length === 0) return s;
-      const top = visible.reduce((a, b) => (a.z > b.z ? a : b));
+      const top = topVisibleWindow(s.windows);
+      if (!top) return s;
       return { windows: s.windows.filter((w) => w.id !== top.id) };
     }),
 }));
