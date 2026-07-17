@@ -129,12 +129,13 @@
   .system-frame {
     position: relative;
     border: 1px solid var(--border);
+    /* near-opaque over the 3D scene so window text stays readable */
     background:
-      linear-gradient(oklch(0.18 0.03 260 / 85%), oklch(0.16 0.03 262 / 92%));
+      linear-gradient(oklch(0.18 0.03 260 / 94%), oklch(0.16 0.03 262 / 97%));
     box-shadow:
       0 0 12px oklch(0.72 0.14 235 / 12%),
       inset 0 0 24px oklch(0.72 0.14 235 / 5%);
-    backdrop-filter: blur(6px);
+    backdrop-filter: blur(10px);
   }
   .system-frame::before,
   .system-frame::after {
