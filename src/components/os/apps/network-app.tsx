@@ -23,12 +23,13 @@ const channels = [
   },
 ];
 
-export function SummonApp() {
+export function NetworkApp() {
   return (
     <div className="space-y-5">
       <p className="text-sm leading-relaxed text-muted-foreground">
-        The Player accepts new quests: agentic AI systems, multi-agent
-        architectures, and LLM-driven products. Open a channel below.
+        The Player&apos;s network. New party requests are welcome: agentic AI
+        systems, multi-agent architectures, and LLM-driven products. Open a
+        channel below.
       </p>
       <ul className="space-y-3">
         {channels.map(({ label, href, display, Icon }) => (

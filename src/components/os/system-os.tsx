@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { AnimatePresence } from "motion/react";
 import type { AppId } from "@/config/apps.config";
-import { appList } from "@/config/apps.config";
+import { dockApps } from "@/config/apps.config";
 import { AgentDevBridge } from "@/agent/dev-bridge";
 import { toggleFullscreen } from "@/hooks/use-fullscreen";
 import { sfx } from "@/lib/sfx";
@@ -17,11 +17,12 @@ import { OsWindow } from "./os-window";
 import { TopBar } from "./top-bar";
 import { ChronicleApp } from "./apps/chronicle-app";
 import { CvApp } from "./apps/cv-app";
+import { InspectApp } from "./apps/inspect-app";
 import { InventoryApp } from "./apps/inventory-app";
+import { NetworkApp } from "./apps/network-app";
 import { QuestsApp } from "./apps/quests-app";
 import { SkillsApp } from "./apps/skills-app";
 import { StatusApp } from "./apps/status-app";
-import { SummonApp } from "./apps/summon-app";
 
 const appComponents: Record<AppId, React.ComponentType> = {
   status: StatusApp,
@@ -29,8 +30,9 @@ const appComponents: Record<AppId, React.ComponentType> = {
   skills: SkillsApp,
   inventory: InventoryApp,
   chronicle: ChronicleApp,
-  summon: SummonApp,
+  network: NetworkApp,
   cv: CvApp,
+  inspect: InspectApp,
 };
 
 export function SystemOS() {
@@ -67,11 +69,11 @@ export function SystemOS() {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       // F toggles immersion mode (Esc always exits, courtesy of the browser)
       if (e.key === "f" || e.key === "F") return toggleFullscreen();
-      // hotkeys 1–6 launch apps, game style
+      // hotkeys 1–6 launch dock apps, game style (hidden windows have none)
       const slot = Number.parseInt(e.key, 10) - 1;
-      if (slot >= 0 && slot < appList.length) {
+      if (slot >= 0 && slot < dockApps.length) {
         sfx.open();
-        open(appList[slot].id);
+        open(dockApps[slot].id);
       }
     };
     window.addEventListener("keydown", onKey);

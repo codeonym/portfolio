@@ -8,8 +8,9 @@ import {
 } from "@/config/inventory.config";
 import { player } from "@/config/player.config";
 import { quests } from "@/config/quests.config";
-import { skillCategories } from "@/config/skills.config";
+import { skillCategories, skillSets, skills } from "@/config/skills.config";
 import { systemConfig } from "@/config/system.config";
+import type { InspectTarget } from "@/config/types";
 import { useFullscreen } from "@/hooks/use-fullscreen";
 import type { OsWindow, StageSize } from "@/store/os-store";
 import { topVisibleWindow, useOsStore } from "@/store/os-store";
@@ -62,10 +63,24 @@ export interface SystemSnapshot {
   apps: AppSnapshot[];
   /** currently open windows with live geometry */
   windows: WindowSnapshot[];
+  /** what the INFO window is currently showing, if anything */
+  inspectTarget: InspectTarget | null;
   /** the Player's dossier — identity, stats, CV data */
   player: typeof player;
   quests: typeof quests;
-  skills: typeof skillCategories;
+  skills: {
+    sets: typeof skillSets;
+    categories: { id: string; name: string; set: string }[];
+    skills: {
+      id: string;
+      name: string;
+      category: string;
+      rarity: string;
+      mastery: number;
+      lore: string;
+      tags?: string[];
+    }[];
+  };
   chronicle: typeof chronicle;
   achievements: typeof achievements;
   inventory: {
@@ -75,11 +90,13 @@ export interface SystemSnapshot {
       name: string;
       category: string;
       rarity: string;
-      mastery: number;
+      meta?: string;
       lore: string;
       tags?: string[];
-      /** inspecting the item opens this app */
+      /** USE-ing the item opens this app */
       unlocks?: AppId;
+      /** USE-ing the item opens this external URL */
+      link?: string;
     }[];
   };
 }
@@ -88,13 +105,15 @@ export interface SystemSnapshot {
 const dossier = {
   player,
   quests,
-  skills: skillCategories,
-  chronicle,
-  achievements,
-  inventory: {
-    categories: inventoryCategories.map(({ id, name }) => ({ id, name })),
-    items: inventoryItems.map(
-      ({ id, name, category, rarity, mastery, lore, tags, unlocks }) => ({
+  skills: {
+    sets: skillSets,
+    categories: skillCategories.map(({ id, name, set }) => ({
+      id,
+      name,
+      set,
+    })),
+    skills: skills.map(
+      ({ id, name, category, rarity, mastery, lore, tags }) => ({
         id,
         name,
         category,
@@ -102,7 +121,24 @@ const dossier = {
         mastery,
         lore,
         ...(tags ? { tags } : {}),
+      }),
+    ),
+  },
+  chronicle,
+  achievements,
+  inventory: {
+    categories: inventoryCategories.map(({ id, name }) => ({ id, name })),
+    items: inventoryItems.map(
+      ({ id, name, category, rarity, meta, lore, tags, unlocks, link }) => ({
+        id,
+        name,
+        category,
+        rarity,
+        ...(meta ? { meta } : {}),
+        lore,
+        ...(tags ? { tags } : {}),
         ...(unlocks ? { unlocks } : {}),
+        ...(link ? { link } : {}),
       }),
     ),
   },
@@ -113,6 +149,7 @@ function buildSnapshot(
   stage: StageSize,
   soundMuted: boolean,
   fullscreen: boolean,
+  inspectTarget: InspectTarget | null,
 ): SystemSnapshot {
   const focusedId = topVisibleWindow(windows)?.id;
   return {
@@ -140,27 +177,29 @@ function buildSnapshot(
       width: Math.round(w.width),
       height: w.height == null ? null : Math.round(w.height),
     })),
+    inspectTarget,
     ...dossier,
   };
 }
 
 /** Imperative snapshot — for tool handlers and non-React callers. */
 export function getSystemSnapshot(): SystemSnapshot {
-  const { windows, stage } = useOsStore.getState();
+  const { windows, stage, inspectTarget } = useOsStore.getState();
   const { muted } = useSoundStore.getState();
   const fullscreen =
     typeof document !== "undefined" && document.fullscreenElement !== null;
-  return buildSnapshot(windows, stage, muted, fullscreen);
+  return buildSnapshot(windows, stage, muted, fullscreen, inspectTarget);
 }
 
 /** Reactive snapshot — re-renders as the System changes (V5: feed to useAgentContext). */
 export function useSystemSnapshot(): SystemSnapshot {
   const windows = useOsStore((s) => s.windows);
   const stage = useOsStore((s) => s.stage);
+  const inspectTarget = useOsStore((s) => s.inspectTarget);
   const muted = useSoundStore((s) => s.muted);
   const fullscreen = useFullscreen();
   return useMemo(
-    () => buildSnapshot(windows, stage, muted, fullscreen),
-    [windows, stage, muted, fullscreen],
+    () => buildSnapshot(windows, stage, muted, fullscreen, inspectTarget),
+    [windows, stage, muted, fullscreen, inspectTarget],
   );
 }

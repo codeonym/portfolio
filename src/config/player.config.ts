@@ -14,6 +14,34 @@ export const player: Player = {
   guild: "OpenSNZ-Technology",
   // months of XP since the journey began (2019)
   level: 82,
+  rank: "A",
+  rankNote: "S-RANK ASSESSMENT PENDING",
+  titles: [
+    {
+      id: "agent-summoner",
+      name: "Agent Summoner",
+      description:
+        "Raises AI agents as digital entities that level up, acquire skills and grow — never as static software.",
+    },
+    {
+      id: "citadel-architect",
+      name: "Architect of the Citadel",
+      description:
+        "Designed the modular multi-agent architecture that cleared the S-rank pharmaceutical catalog raid.",
+    },
+    {
+      id: "gate-opener",
+      name: "Gate Opener",
+      description:
+        "Grounds agents in enterprise systems through MCP — opening gates between AI and legacy realms.",
+    },
+    {
+      id: "voice-of-three-tongues",
+      name: "Voice of Three Tongues",
+      description:
+        "Speaks Arabic, English and French — no party goes unheard.",
+    },
+  ],
   profile: [
     "AI Software Engineer specializing in the design and development of agentic AI systems — from LLM-driven workflows to autonomous AI agents and multi-agent architectures (MAS).",
     "Skilled in connecting AI agents to legacy and enterprise systems, grounding them with rich contextual data via MCP, and deploying them into real-world applications with AG-UI and CopilotKit for seamless human-AI interaction.",

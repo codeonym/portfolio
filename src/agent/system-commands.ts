@@ -1,5 +1,8 @@
 import type { AppId } from "@/config/apps.config";
 import { appIds, apps, isAppId } from "@/config/apps.config";
+import { findItem, inventoryItems } from "@/config/inventory.config";
+import { quests } from "@/config/quests.config";
+import { findSkill, skills } from "@/config/skills.config";
 import {
   enterFullscreen,
   exitFullscreen,
@@ -312,6 +315,50 @@ export const systemCommands: SystemCommand[] = [
       return `Arranged ${ids.map((id) => apps[id].title).join(", ")} in a ${layout}${
         args.exclusive === true ? ", everything else minimized" : ""
       }. ${describeWindows()}`;
+    },
+  },
+  {
+    name: "inspect_entity",
+    description:
+      "Open the INFO window on a specific skill, inventory item or quest — the game-style detail popup. Entity ids are listed in the system snapshot (skills, inventory.items, quests).",
+    parameters: {
+      type: "object",
+      properties: {
+        kind: {
+          type: "string",
+          enum: ["skill", "item", "quest"],
+          description: "What kind of entity to inspect.",
+        },
+        id: {
+          type: "string",
+          description: "The entity id from the snapshot.",
+        },
+      },
+      required: ["kind", "id"],
+      additionalProperties: false,
+    },
+    handler: (args) => {
+      const { kind, id } = args;
+      if (kind !== "skill" && kind !== "item" && kind !== "quest")
+        return 'kind must be "skill", "item" or "quest".';
+      if (typeof id !== "string") return "id must be a string.";
+      const found =
+        kind === "skill"
+          ? findSkill(id)
+          : kind === "item"
+            ? findItem(id)
+            : quests.find((q) => q.id === id);
+      if (!found) {
+        const valid =
+          kind === "skill"
+            ? skills.map((s) => s.id)
+            : kind === "item"
+              ? inventoryItems.map((i) => i.id)
+              : quests.map((q) => q.id);
+        return `Unknown ${kind} "${id}". Valid ${kind} ids: ${valid.join(", ")}.`;
+      }
+      useOsStore.getState().inspect({ kind, id });
+      return `INFO window now shows the ${kind} "${found.name}". ${describeWindows()}`;
     },
   },
   {

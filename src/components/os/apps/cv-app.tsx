@@ -7,7 +7,8 @@ import { sfx } from "@/lib/sfx";
 const CV_URL = "/cv.pdf";
 
 /**
- * DOSSIER — the official record. Renders the CV inline; the window
+ * OFFICIAL RECORD — projected by USE-ing the Hunter's License item.
+ * Renders the CV inline; the window
  * ships with a fixed default height (apps.config), so the embed can
  * fill the frame and agents can resize it like any other panel.
  */

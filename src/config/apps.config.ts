@@ -4,8 +4,9 @@ import {
   Brain,
   Gauge,
   IdCard,
-  SatelliteDish,
+  Info,
   ScrollText,
+  Share2,
   Swords,
 } from "lucide-react";
 
@@ -18,6 +19,9 @@ import {
  * `description` is written for AI agents as much as for humans —
  * it is exposed through the agent bridge (src/agent) so an agent
  * can decide which window answers a visitor's question.
+ *
+ * `hidden` windows exist but have no dock entry or hotkey — they
+ * open through gameplay (items, inspect actions) or agent commands.
  */
 export type AppId =
   | "status"
@@ -25,8 +29,9 @@ export type AppId =
   | "skills"
   | "inventory"
   | "chronicle"
-  | "summon"
-  | "cv";
+  | "network"
+  | "cv"
+  | "inspect";
 
 export interface AppDefinition {
   id: AppId;
@@ -39,6 +44,8 @@ export interface AppDefinition {
   width: number;
   /** fixed content height in px; omit to size to content */
   defaultHeight?: number;
+  /** no dock entry, no hotkey — opened via items/inspect/agents */
+  hidden?: boolean;
 }
 
 export const apps: Record<AppId, AppDefinition> = {
@@ -47,7 +54,7 @@ export const apps: Record<AppId, AppDefinition> = {
     title: "STATUS",
     icon: Gauge,
     description:
-      "Player identity and overview: name, title, level, guild, location, core stats, vitals and profile summary.",
+      "Player identity and overview: portrait, name, job title, rank, titles acquired, level, guild, location, core stats, vitals and profile summary.",
     defaultPosition: { x: 660, y: 50 },
     width: 620,
   },
@@ -56,7 +63,7 @@ export const apps: Record<AppId, AppDefinition> = {
     title: "QUEST LOG",
     icon: Swords,
     description:
-      "Projects framed as quests: rank, status, summary, details and the tech stack earned as rewards.",
+      "Main quests (the Player's job/engagements) and side quests (academic and personal projects). Clicking a quest opens its details in the INFO window.",
     defaultPosition: { x: 620, y: 100 },
     width: 560,
   },
@@ -65,7 +72,7 @@ export const apps: Record<AppId, AppDefinition> = {
     title: "SKILLS",
     icon: Brain,
     description:
-      "Skill tree grouped by category with 0-100 mastery per skill.",
+      "The skill tree in two sets: job skills (the craft — AI, languages, web, data, ops) and secondary skills (tongues, soft skills, pursuits). Clicking a skill opens its details in the INFO window.",
     defaultPosition: { x: 680, y: 70 },
     width: 640,
   },
@@ -74,7 +81,7 @@ export const apps: Record<AppId, AppDefinition> = {
     title: "INVENTORY",
     icon: Backpack,
     description:
-      "The tech stack as game items with rarity and mastery, plus artifacts such as the Hunter's License (the CV).",
+      "The Player's possessions: artifacts (including the Hunter's License holding the CV), credentials (degrees) and curios. Clicking an item opens its details in the INFO window; some items can be USE-d to open other windows.",
     defaultPosition: { x: 600, y: 60 },
     width: 680,
   },
@@ -87,28 +94,42 @@ export const apps: Record<AppId, AppDefinition> = {
     defaultPosition: { x: 640, y: 80 },
     width: 600,
   },
-  summon: {
-    id: "summon",
-    title: "SUMMON",
-    icon: SatelliteDish,
+  network: {
+    id: "network",
+    title: "NETWORK",
+    icon: Share2,
     description:
-      "Contact channels: GitHub, LinkedIn and email — how to reach the Player.",
+      "Contact channels: GitHub, LinkedIn and email — how to reach the Player and form a party.",
     defaultPosition: { x: 720, y: 140 },
     width: 480,
   },
   cv: {
     id: "cv",
-    title: "DOSSIER",
+    title: "OFFICIAL RECORD",
     icon: IdCard,
     description:
-      "The official record: the Player's full CV rendered as a PDF, with a download option.",
+      "The Player's full CV rendered as a PDF with a download option. Opened by USE-ing the Hunter's License item in the INVENTORY.",
     defaultPosition: { x: 560, y: 40 },
     width: 720,
     defaultHeight: 560,
+    hidden: true,
+  },
+  inspect: {
+    id: "inspect",
+    title: "INFO",
+    icon: Info,
+    description:
+      "Game-style detail popup for whatever was last inspected: a skill, an inventory item or a quest. Retargets when something else is clicked.",
+    defaultPosition: { x: 180, y: 120 },
+    width: 470,
+    hidden: true,
   },
 };
 
 export const appList: AppDefinition[] = Object.values(apps);
+
+/** dock + hotkey surface — hidden windows excluded */
+export const dockApps: AppDefinition[] = appList.filter((app) => !app.hidden);
 
 export const appIds = appList.map((app) => app.id) as AppId[];
 
