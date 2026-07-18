@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import type { AppId } from "./apps.config";
 
 export type QuestRank = "S" | "A" | "B";
 export type QuestStatus = "cleared" | "ongoing";
@@ -94,6 +95,8 @@ export interface InventoryItem {
   /** flavor description shown in the item detail panel */
   lore: string;
   tags?: string[];
+  /** inspecting this item opens the given System window (e.g. the CV) */
+  unlocks?: AppId;
 }
 
 export interface Vital {

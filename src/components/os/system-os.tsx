@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { AnimatePresence } from "motion/react";
 import type { AppId } from "@/config/apps.config";
 import { appList } from "@/config/apps.config";
+import { AgentDevBridge } from "@/agent/dev-bridge";
 import { toggleFullscreen } from "@/hooks/use-fullscreen";
 import { sfx } from "@/lib/sfx";
 import { topVisibleWindow, useOsStore } from "@/store/os-store";
@@ -15,6 +16,7 @@ import { SystemLog } from "./system-log";
 import { OsWindow } from "./os-window";
 import { TopBar } from "./top-bar";
 import { ChronicleApp } from "./apps/chronicle-app";
+import { CvApp } from "./apps/cv-app";
 import { InventoryApp } from "./apps/inventory-app";
 import { QuestsApp } from "./apps/quests-app";
 import { SkillsApp } from "./apps/skills-app";
@@ -28,12 +30,14 @@ const appComponents: Record<AppId, React.ComponentType> = {
   inventory: InventoryApp,
   chronicle: ChronicleApp,
   summon: SummonApp,
+  cv: CvApp,
 };
 
 export function SystemOS() {
   const windows = useOsStore((s) => s.windows);
   const open = useOsStore((s) => s.open);
   const closeTop = useOsStore((s) => s.closeTop);
+  const setStageSize = useOsStore((s) => s.setStageSize);
   const stageRef = useRef<HTMLDivElement>(null);
   const booted = useRef(false);
 
@@ -43,6 +47,19 @@ export function SystemOS() {
     booted.current = true;
     open("status");
   }, [open]);
+
+  // the store needs the live stage size so agent-driven layout
+  // commands (arrange, move, resize) can clamp to real bounds
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const observer = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      setStageSize({ width, height });
+    });
+    observer.observe(stage);
+    return () => observer.disconnect();
+  }, [setStageSize]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -78,6 +95,7 @@ export function SystemOS() {
         <AvatarStage />
         <SystemLog />
         <AmbientEvents />
+        <AgentDevBridge />
         <AnimatePresence>
           {windows.map((win) => {
             const App = appComponents[win.id];

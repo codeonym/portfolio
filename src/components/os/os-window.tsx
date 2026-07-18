@@ -102,9 +102,9 @@ export function OsWindow({ win, stageRef, children, focused }: OsWindowProps) {
       onPointerLeave={resetTilt}
       className="absolute"
       style={{
-        left: `min(${win.x}px, calc(100vw - ${def.width}px - 24px))`,
+        left: `min(${win.x}px, calc(100vw - ${win.width}px - 24px))`,
         top: win.y,
-        width: def.width,
+        width: win.width,
         maxWidth: "calc(100vw - 48px)",
         zIndex: win.z,
         display: win.minimized ? "none" : undefined,
@@ -175,7 +175,15 @@ export function OsWindow({ win, stageRef, children, focused }: OsWindowProps) {
               </button>
             </span>
           </div>
-          <div data-window-scroll className="max-h-[62vh] overflow-y-auto p-5">
+          <div
+            data-window-scroll
+            className={cn(
+              "overflow-y-auto p-5",
+              win.height == null && "max-h-[62vh]",
+            )}
+            // agent-set height: the frame is fixed and content scrolls inside
+            style={{ height: win.height ?? undefined }}
+          >
             {children}
           </div>
         </div>

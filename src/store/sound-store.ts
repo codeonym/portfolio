@@ -7,6 +7,8 @@ interface SoundState {
   /** sync from localStorage after mount (client only) */
   init: () => void;
   toggle: () => void;
+  /** idempotent setter — agent-facing (see src/agent) */
+  setMuted: (muted: boolean) => void;
 }
 
 export const useSoundStore = create<SoundState>((set, get) => ({
@@ -15,7 +17,9 @@ export const useSoundStore = create<SoundState>((set, get) => ({
     set({ muted: localStorage.getItem(MUTE_KEY) === "1" });
   },
   toggle: () => {
-    const muted = !get().muted;
+    get().setMuted(!get().muted);
+  },
+  setMuted: (muted) => {
     localStorage.setItem(MUTE_KEY, muted ? "1" : "0");
     set({ muted });
   },
