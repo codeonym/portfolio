@@ -7,7 +7,9 @@ import {
   inventoryItems,
 } from "@/config/inventory.config";
 import type { InventoryItem, Rarity } from "@/config/types";
+import { apps } from "@/config/apps.config";
 import { sfx } from "@/lib/sfx";
+import { useOsStore } from "@/store/os-store";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -38,6 +40,7 @@ const MASTERY_SEGMENTS = 20;
 
 export function InventoryApp() {
   const reduced = useReducedMotion();
+  const openApp = useOsStore((s) => s.open);
   const [category, setCategory] = useState<string | null>(null);
   const [selected, setSelected] = useState<InventoryItem>(inventoryItems[0]);
 
@@ -195,6 +198,19 @@ export function InventoryApp() {
               </Badge>
             ))}
           </div>
+        )}
+        {selected.unlocks && (
+          <button
+            type="button"
+            onClick={() => {
+              sfx.open();
+              openApp(selected.unlocks!);
+            }}
+            onMouseEnter={() => sfx.hover()}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-sm border border-rank-s/50 bg-rank-s/10 px-3 py-2 font-heading text-[11px] tracking-[0.3em] text-rank-s transition hover:-translate-y-0.5 hover:bg-rank-s/20 hover:shadow-[0_0_16px_oklch(0.78_0.15_85/0.4)]"
+          >
+            ◈ INSPECT — OPEN {apps[selected.unlocks].title}
+          </button>
         )}
       </div>
     </div>

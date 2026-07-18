@@ -10,6 +10,7 @@ import {
   FlaskConical,
   GitBranch,
   Globe,
+  IdCard,
   KeyRound,
   Layers,
   Network,
@@ -34,6 +35,7 @@ import type { InventoryCategory, InventoryItem } from "./types";
  * `category` must match a category id below. mastery is 0–100.
  */
 export const inventoryCategories: InventoryCategory[] = [
+  { id: "artifacts", name: "ARTIFACTS", icon: KeyRound },
   { id: "ai", name: "AI ARSENAL", icon: Bot },
   { id: "languages", name: "LANGUAGES", icon: Terminal },
   { id: "web", name: "WEB GEAR", icon: Layers },
@@ -42,6 +44,19 @@ export const inventoryCategories: InventoryCategory[] = [
 ];
 
 export const inventoryItems: InventoryItem[] = [
+  // ── ARTIFACTS ───────────────────────────────────────────────
+  {
+    id: "hunter-license",
+    name: "Hunter's License",
+    icon: IdCard,
+    category: "artifacts",
+    rarity: "legendary",
+    mastery: 100,
+    lore: "Official proof of the Player's rank, raids and titles. Inspect it to open the DOSSIER — the complete record, ready to extract.",
+    tags: ["cv", "resume", "official-record"],
+    unlocks: "cv",
+  },
+
   // ── AI ARSENAL ──────────────────────────────────────────────
   {
     id: "langgraph",
