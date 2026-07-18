@@ -42,4 +42,6 @@ next-env.d.ts
 
 # personal source material (CV has private contact details)
 cv.pdf
+# ...but the deployed DOSSIER app serves this copy (user-approved)
+!public/cv.pdf
 sample.png
