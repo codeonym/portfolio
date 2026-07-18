@@ -1,33 +1,25 @@
 "use client";
 
-import { useRef } from "react";
-import { useFrame } from "@react-three/fiber";
 import { Sparkles } from "@react-three/drei";
-import type { GridHelper } from "three";
 import { ARCANE_PURPLE, SYSTEM_BLUE } from "./hologram-avatar";
+import { GateArch } from "./gate-arch";
+import { LobbyFloor } from "./lobby-floor";
+import { PillarColonnade } from "./pillar-colonnade";
+import { SummonCircle } from "./summon-circle";
 
 /**
- * The void around the Player: a grid floor receding into fog and
- * two drifting mana-dust fields (blue near, purple far) that give
- * the stage its parallax depth.
+ * The game lobby around the Player: reflective floor, the Gate,
+ * pillar colonnades receding into fog, a summoning circle under
+ * the mana core, and two drifting mana-dust fields for parallax.
  */
 export function StageEnvironment() {
-  const grid = useRef<GridHelper>(null);
-
-  useFrame((_, delta) => {
-    // floor slides toward the camera and loops, like moving through a gate
-    if (grid.current) {
-      grid.current.position.z = (grid.current.position.z + delta * 0.4) % 2;
-    }
-  });
-
   return (
     <>
-      <gridHelper
-        ref={grid}
-        args={[80, 40, SYSTEM_BLUE, "#1c2a45"]}
-        position={[0, -3, 0]}
-      />
+      <LobbyFloor />
+      <GateArch position={[3.4, -3, -11]} />
+      <PillarColonnade />
+      {/* sigil under the Player's core, just above the floor */}
+      <SummonCircle position={[-3.3, -2.96, 0]} radius={2.2} />
       <Sparkles
         count={140}
         scale={[26, 12, 14]}

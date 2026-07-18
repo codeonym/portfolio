@@ -67,11 +67,6 @@ export function HologramAvatar({ position = [0, 0, 0] }: HologramAvatarProps) {
         <Sparkles count={40} scale={3.4} size={2.2} speed={0.35} color={ARCANE_PURPLE} opacity={0.7} />
         <pointLight color={ARCANE_PURPLE} intensity={6} distance={9} />
       </group>
-      {/* projection base: faint disc under the core */}
-      <mesh position={[0, -2.6, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[1.2, 2.1, 64]} />
-        <meshBasicMaterial color={SYSTEM_BLUE} transparent opacity={0.12} />
-      </mesh>
     </group>
   );
 }

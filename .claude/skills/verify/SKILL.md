@@ -39,8 +39,25 @@ Use a ≥1280px viewport (device-gate blocks small screens).
 - **PDF windows render white in headless** (no PDF viewer plugin in
   chromium headless shell); confirm the file with
   `curl -sI localhost:3000/cv.pdf` instead.
-- **`public/cv.pdf` is gitignored on purpose** (private contact
-  details) — copy it from the repo-root `cv.pdf` before verifying
-  the DOSSIER app: `cp cv.pdf public/cv.pdf`.
+- **`public/cv.pdf` is committed** (user-approved exception; only the
+  repo-root `cv.pdf` source stays gitignored) — no copy step needed.
 - Wheel-scroll in headless is ~80% flaky and fullscreen kills native
   window scroll — run repeated trials before blaming a change.
+- **Screenshots capture stale compositor tiles over the WebGL canvas**
+  (whole scene looks black, or a moving vertical boundary of visible
+  content). Not a product bug — force a clean repaint before every
+  screenshot by flashing a full-viewport overlay:
+
+  ```js
+  await page.evaluate(async () => {
+    const d = document.createElement("div");
+    d.style.cssText = "position:fixed;inset:0;background:#fff;z-index:99999";
+    document.body.appendChild(d);
+    await new Promise((r) => setTimeout(r, 150));
+    d.remove();
+  });
+  await page.waitForTimeout(1000);
+  ```
+
+  (Viewport-resize also works but fails while fullscreen — the boot
+  skip enters fullscreen, so use the overlay flash.)
