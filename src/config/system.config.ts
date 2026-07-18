@@ -8,7 +8,7 @@ import type { SystemConfig } from "./types";
  * Edit freely — the types in ./types.ts keep the UI safe.
  */
 export const systemConfig: SystemConfig = {
-  version: "4.7",
+  version: "4.8",
   xpProgress: 64,
 
   vitals: [
@@ -83,6 +83,11 @@ export const systemConfig: SystemConfig = {
       tone: "system",
     },
     {
+      heading: "ARISE",
+      body: "A shadow bent the knee. The legion grows by one.",
+      tone: "arcane",
+    },
+    {
       heading: "MANA SURGE",
       body: "Prompt cache warmed. Inference latency -34%.",
       tone: "arcane",
@@ -115,8 +120,8 @@ export const systemConfig: SystemConfig = {
     "render.core 60fps ........ hologram",
   ],
 
-  avatarCaption: "[ AVATAR SYNCHRONIZED · VESSEL PROJECTION STABLE ]",
-  dockFooter: "SYSTEM v4.7 · forged by codeonym · character sheet complete — the Player is fully realized",
+  avatarCaption: "[ ARISE · THE SHADOW LEGION STANDS BEHIND ITS MONARCH ]",
+  dockFooter: "SYSTEM v4.8 · forged by codeonym · ARISE — the legion answers only to its Monarch",
 
   unsupported: {
     error: "⚠ SYSTEM ERROR",

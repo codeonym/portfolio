@@ -1,24 +1,27 @@
 "use client";
 
+import { Suspense } from "react";
 import { Sparkles } from "@react-three/drei";
 import { ARCANE_PURPLE, SYSTEM_BLUE } from "./hologram-avatar";
-import { GateArch } from "./gate-arch";
 import { LobbyFloor } from "./lobby-floor";
-import { PillarColonnade } from "./pillar-colonnade";
+import { ShadowArmy } from "./shadow-army";
 import { SummonCircle } from "./summon-circle";
 
 /**
- * The game lobby around the Player: reflective floor, the Gate,
- * pillar colonnades receding into fog, a summoning circle under
- * the mana core, and two drifting mana-dust fields for parallax.
+ * The Monarch's stage: the mana grid floor, the summoning circle
+ * under the Player, the shadow legion arrayed behind him, and two
+ * drifting mana-dust fields for parallax. (The v4.6 gate, pillars
+ * and reflective slab were traded for the army in v4.8.)
  */
 export function StageEnvironment() {
   return (
     <>
       <LobbyFloor />
-      <GateArch position={[3.4, -3, -11]} />
-      <PillarColonnade />
-      {/* sigil under the Player's core, just above the floor */}
+      {/* the legion rises once the shared rig streams in */}
+      <Suspense fallback={null}>
+        <ShadowArmy />
+      </Suspense>
+      {/* sigil under the Monarch, just above the floor */}
       <SummonCircle position={[-3.3, -2.96, 0]} radius={2.2} />
       <Sparkles
         count={140}
