@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { AppId } from "@/config/apps.config";
 import { apps } from "@/config/apps.config";
+import type { InspectTarget } from "@/config/types";
 
 /**
  * ── WINDOW MANAGER ────────────────────────────────────────────
@@ -57,6 +58,11 @@ interface OsState {
   /** live size of the window stage, reported by SystemOS */
   stage: StageSize;
   setStageSize: (size: StageSize) => void;
+
+  /** what the INFO window is showing; survives close/reopen */
+  inspectTarget: InspectTarget | null;
+  /** retarget the INFO window and bring it up */
+  inspect: (target: InspectTarget) => void;
 
   open: (id: AppId) => void;
   close: (id: AppId) => void;
@@ -133,10 +139,16 @@ function spawnWindow(
   );
 }
 
-export const useOsStore = create<OsState>((set) => ({
+export const useOsStore = create<OsState>((set, get) => ({
   windows: [],
   zCounter: 1,
   stage: { width: 0, height: 0 },
+
+  inspectTarget: null,
+  inspect: (target) => {
+    set({ inspectTarget: target });
+    get().open("inspect");
+  },
 
   setStageSize: (size) =>
     set((s) => ({

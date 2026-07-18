@@ -8,7 +8,7 @@ import type { SystemConfig } from "./types";
  * Edit freely — the types in ./types.ts keep the UI safe.
  */
 export const systemConfig: SystemConfig = {
-  version: "4.6",
+  version: "4.7",
   xpProgress: 64,
 
   vitals: [
@@ -56,7 +56,7 @@ export const systemConfig: SystemConfig = {
     "MANA FLOW STABLE",
     "6 AGENTS ON PATROL",
     "NO ANOMALIES DETECTED",
-    "GATE SCAN: 5 QUESTS ON RECORD",
+    "GATE SCAN: 6 QUESTS ON RECORD",
     "CONTEXT INTEGRITY 100%",
   ],
 
@@ -79,7 +79,7 @@ export const systemConfig: SystemConfig = {
     },
     {
       heading: "PARTY REQUEST",
-      body: "A visitor wishes to form a party. Open [ SUMMON ] to respond.",
+      body: "A visitor wishes to form a party. Open [ NETWORK ] to respond.",
       tone: "system",
     },
     {
@@ -116,7 +116,7 @@ export const systemConfig: SystemConfig = {
   ],
 
   avatarCaption: "[ AVATAR SYNCHRONIZED · VESSEL PROJECTION STABLE ]",
-  dockFooter: "SYSTEM v4.6 · forged by codeonym · gate open — the lobby awaits its Player",
+  dockFooter: "SYSTEM v4.7 · forged by codeonym · character sheet complete — the Player is fully realized",
 
   unsupported: {
     error: "⚠ SYSTEM ERROR",

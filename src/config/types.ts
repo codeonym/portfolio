@@ -21,6 +21,14 @@ export interface PlayerLinks {
   email: string;
 }
 
+/** honorific earned through deeds — shown as gold chips in STATUS */
+export interface PlayerTitle {
+  id: string;
+  name: string;
+  /** the deed behind the title, one line */
+  description: string;
+}
+
 export interface Player {
   name: string;
   handle: string;
@@ -29,6 +37,11 @@ export interface Player {
   location: string;
   guild: string;
   level: number;
+  /** hunter rank letter (S/A/B...) shown beside the level */
+  rank: string;
+  /** flavor line under the rank (e.g. next assessment) */
+  rankNote: string;
+  titles: PlayerTitle[];
   profile: string[];
   creed: string;
   stats: Stat[];
@@ -50,15 +63,42 @@ export interface Quest {
   link?: string;
 }
 
-export interface Skill {
+/** job = the Player's craft; secondary = everything the job isn't */
+export type SkillSet = "job" | "secondary";
+
+export interface SkillSetDef {
+  id: SkillSet;
   name: string;
-  /** 0–100 mastery */
-  level: number;
+  /** one-line intro rendered under the set heading */
+  blurb: string;
 }
 
-export interface SkillCategory {
+export interface SkillCategoryDef {
+  id: string;
   name: string;
-  skills: Skill[];
+  icon: LucideIcon;
+  set: SkillSet;
+  tone: Tone;
+}
+
+export interface SkillDetail {
+  id: string;
+  name: string;
+  icon: LucideIcon;
+  /** must match a SkillCategoryDef id */
+  category: string;
+  rarity: Rarity;
+  /** 0–100 mastery, drives the gauge and grade */
+  mastery: number;
+  /** flavor description shown in the INFO window */
+  lore: string;
+  tags?: string[];
+}
+
+/** what the singleton INFO window is currently showing */
+export interface InspectTarget {
+  kind: "skill" | "item" | "quest";
+  id: string;
 }
 
 export interface ChronicleEntry {
@@ -90,13 +130,15 @@ export interface InventoryItem {
   /** must match an InventoryCategory id */
   category: string;
   rarity: Rarity;
-  /** 0–100 proficiency, drives the mastery gauge */
-  mastery: number;
-  /** flavor description shown in the item detail panel */
+  /** provenance line (issuer · period) shown under the item name */
+  meta?: string;
+  /** flavor description shown in the INFO window */
   lore: string;
   tags?: string[];
-  /** inspecting this item opens the given System window (e.g. the CV) */
+  /** USE-ing this item opens the given System window (e.g. the CV) */
   unlocks?: AppId;
+  /** USE-ing this item opens an external destination */
+  link?: string;
 }
 
 export interface Vital {

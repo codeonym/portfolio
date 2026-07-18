@@ -1,6 +1,6 @@
 "use client";
 
-import { appList } from "@/config/apps.config";
+import { dockApps } from "@/config/apps.config";
 import { systemConfig } from "@/config/system.config";
 import { sfx } from "@/lib/sfx";
 import { topVisibleWindow, useOsStore } from "@/store/os-store";
@@ -14,7 +14,7 @@ export function Dock() {
   return (
     <footer className="z-40 flex items-center justify-between gap-4 border-t border-system/25 bg-background/85 px-5 py-2 backdrop-blur-md">
       <nav aria-label="System applications" className="flex items-center gap-2">
-        {appList.map((app, index) => {
+        {dockApps.map((app, index) => {
           const win = windows.find((w) => w.id === app.id);
           return (
             <button

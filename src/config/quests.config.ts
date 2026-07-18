@@ -2,11 +2,38 @@ import type { Quest } from "./types";
 
 /**
  * ── QUEST LOG ─────────────────────────────────────────────────
- * Projects framed as quests. rank: "S" | "A" | "B" (drives glow color),
- * type: "main" | "side", status: "cleared" | "ongoing".
- * `rewards` are the tech-stack badges shown in the detail view.
+ * main quests = the Player's engagements (the OpenSNZ questline);
+ * side quests = academic and personal projects.
+ * rank: "S" | "A" | "B" (drives glow color), status: "cleared" | "ongoing".
+ * `rewards` are the tech-stack badges shown in the INFO window.
  */
 export const quests: Quest[] = [
+  {
+    id: "opensnz-contract",
+    name: "Guild Contract — OpenSNZ-Technology",
+    rank: "S",
+    type: "main",
+    status: "ongoing",
+    period: "2025/09 – Present",
+    summary:
+      "The active main questline: Software Engineer & AI Developer at OpenSNZ-Technology — design, implementation and maintenance of agentic AI systems, from rapid prototyping to production-ready solutions with complex agent-driven architectures.",
+    details: [
+      "Ship agentic AI systems from prototype to production.",
+      "Engineer context and prompts so agent reasoning stays reliable under real-world load.",
+      "Ground agents in enterprise systems via MCP and expose them through AG-UI/CopilotKit.",
+      "Maintain and evolve complex agent-driven architectures in the wild.",
+    ],
+    rewards: [
+      "Agentic AI",
+      "Context Engineering",
+      "Prompt Engineering",
+      "LangChain/LangGraph",
+      "LangSmith",
+      "MCP",
+      "RAG Systems",
+      "CopilotKit (AG-UI)",
+    ],
+  },
   {
     id: "pharma-mas",
     name: "Multi-Agent Pharmaceutical Catalog System",
@@ -37,7 +64,7 @@ export const quests: Quest[] = [
     id: "brikool",
     name: "Brikool",
     rank: "A",
-    type: "main",
+    type: "side",
     status: "cleared",
     summary:
       "A platform helping local freelancers list and showcase their services, giving customers easy access and fast discovery of service providers.",
