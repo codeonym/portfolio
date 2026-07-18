@@ -115,7 +115,7 @@ export const systemConfig: SystemConfig = {
     "render.core 60fps ........ hologram",
   ],
 
-  avatarCaption: "[ MANA CORE PROJECTED · AVATAR SYNC IN PROGRESS ]",
+  avatarCaption: "[ AVATAR SYNCHRONIZED · VESSEL PROJECTION STABLE ]",
   dockFooter: "SYSTEM v4.6 · forged by codeonym · gate open — the lobby awaits its Player",
 
   unsupported: {

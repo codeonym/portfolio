@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // vendored assets served as-is (draco decoder etc.)
+    "public/**",
   ]),
 ]);
 
