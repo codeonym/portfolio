@@ -8,7 +8,7 @@ import type { SystemConfig } from "./types";
  * Edit freely — the types in ./types.ts keep the UI safe.
  */
 export const systemConfig: SystemConfig = {
-  version: "4.5",
+  version: "4.6",
   xpProgress: 64,
 
   vitals: [
@@ -115,8 +115,8 @@ export const systemConfig: SystemConfig = {
     "render.core 60fps ........ hologram",
   ],
 
-  avatarCaption: "[ MANA CORE PROJECTED · AVATAR SYNC IN PROGRESS ]",
-  dockFooter: "SYSTEM v4.5 · forged by codeonym · agent bridge armed — awakening imminent",
+  avatarCaption: "[ AVATAR SYNCHRONIZED · VESSEL PROJECTION STABLE ]",
+  dockFooter: "SYSTEM v4.6 · forged by codeonym · gate open — the lobby awaits its Player",
 
   unsupported: {
     error: "⚠ SYSTEM ERROR",

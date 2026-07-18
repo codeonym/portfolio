@@ -45,3 +45,6 @@ cv.pdf
 # ...but the deployed DOSSIER app serves this copy (user-approved)
 !public/cv.pdf
 sample.png
+
+# raw Mixamo source files (the converted, compressed .glb ships instead)
+imots/

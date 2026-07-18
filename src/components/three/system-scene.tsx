@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { useReducedMotion } from "motion/react";
 import { ParticleField } from "@/components/system/particle-field";
 import { CameraRig, nudgeZoom } from "./camera-rig";
 import { HologramAvatar } from "./hologram-avatar";
+import { LobbyEffects } from "./lobby-effects";
+import { PlayerAvatar } from "./player-avatar";
 import { StageEnvironment } from "./stage-environment";
 
 /**
@@ -50,10 +52,18 @@ export function SystemScene() {
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
         eventSource={typeof document !== "undefined" ? document.body : undefined}
       >
-        <fog attach="fog" args={["#0e1220", 9, 26]} />
+        {/* opaque background: the post chain composites against it,
+            and it matches the page's own dark navy */}
+        <color attach="background" args={["#0e1220"]} />
+        <fog attach="fog" args={["#0e1220", 10, 34]} />
+        <ambientLight intensity={0.4} />
         <CameraRig frozen={!!reduced} />
-        <HologramAvatar position={[-3.3, 0.1, 0]} />
+        {/* the mana core stands in while the Player's rig streams */}
+        <Suspense fallback={<HologramAvatar position={[-3.3, 0.1, 0]} />}>
+          <PlayerAvatar position={[-3.3, -2.96, 0]} />
+        </Suspense>
         <StageEnvironment />
+        <LobbyEffects />
       </Canvas>
     </div>
   );
