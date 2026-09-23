@@ -134,6 +134,26 @@ export const skills: SkillDetail[] = [
     lore: "Clockwork rituals. LLM-driven pipelines that carry work from raw input to finished act without a hand on the wheel.",
     tags: ["automation", "llm"],
   },
+  {
+    id: "software-architecture",
+    name: "DDD · CQRS · Event-Driven",
+    icon: Landmark,
+    category: "ai-arch",
+    rarity: "epic",
+    mastery: 87,
+    lore: "Load-bearing runes. Agent systems raised on bounded contexts, split reads from writes, and events that ripple through the citadel.",
+    tags: ["ddd", "cqrs", "eda"],
+  },
+  {
+    id: "agent-skills",
+    name: "Agent Skills (SKILLS.md)",
+    icon: ScanText,
+    category: "ai-arch",
+    rarity: "rare",
+    mastery: 85,
+    lore: "Scrolls of technique. Capabilities packaged as skill files an agent can learn on demand — literal skill acquisition.",
+    tags: ["skills", "agents"],
+  },
 
   // ── AI AGENT STACK ──────────────────────────────────────────
   {
@@ -185,6 +205,16 @@ export const skills: SkillDetail[] = [
     mastery: 78,
     lore: "Alchemist's kit. BiLSTM taggers and CNN vision pipelines were brewed with this in earlier arcs.",
     tags: ["ml", "nlp", "cnn"],
+  },
+  {
+    id: "document-ai",
+    name: "Document AI (LandingAI · Textract)",
+    icon: ScanText,
+    category: "agent-stack",
+    rarity: "epic",
+    mastery: 86,
+    lore: "Eyes that read the archive. Turns document-heavy enterprise data into structure an agent can reason over.",
+    tags: ["extraction", "ocr", "grounding"],
   },
 
   // ── PROGRAMMING LANGUAGES ───────────────────────────────────
@@ -281,6 +311,16 @@ export const skills: SkillDetail[] = [
     tags: ["validation", "orm"],
   },
   {
+    id: "trpc",
+    name: "tRPC",
+    icon: Cable,
+    category: "web",
+    rarity: "rare",
+    mastery: 80,
+    lore: "Whisper line. End-to-end typed calls between client and server — no contract drift.",
+    tags: ["typescript", "api"],
+  },
+  {
     id: "auth",
     name: "Auth.js / KindeAuth",
     icon: TowerControl,
@@ -365,6 +405,26 @@ export const skills: SkillDetail[] = [
     tags: ["containers"],
   },
   {
+    id: "messaging",
+    name: "RabbitMQ / Celery",
+    icon: Shuffle,
+    category: "ops",
+    rarity: "epic",
+    mastery: 84,
+    lore: "Messenger ravens. The async backbone that carries tasks and events between agents without anyone waiting.",
+    tags: ["queues", "async"],
+  },
+  {
+    id: "edge",
+    name: "Traefik / Authentik",
+    icon: TowerControl,
+    category: "ops",
+    rarity: "rare",
+    mastery: 80,
+    lore: "Gatehouse and seal. Routes every request to its hall and checks every face at the door.",
+    tags: ["proxy", "sso"],
+  },
+  {
     id: "cicd",
     name: "GitHub Actions / CI-CD",
     icon: Workflow,
@@ -376,7 +436,7 @@ export const skills: SkillDetail[] = [
   },
   {
     id: "git",
-    name: "Git / GitHub / GitLab",
+    name: "Git / GitHub / GitLab / Jira",
     icon: GitBranch,
     category: "ops",
     rarity: "epic",
@@ -538,6 +598,16 @@ export const skills: SkillDetail[] = [
     rarity: "rare",
     mastery: 80,
     lore: "Passive XP stream. Long-form signal absorbed on the move.",
+    tags: ["learning"],
+  },
+  {
+    id: "webinars",
+    name: "Webinars",
+    icon: Telescope,
+    category: "pursuits",
+    rarity: "common",
+    mastery: 78,
+    lore: "Scouting reports from other guilds — the frontier moves weekly.",
     tags: ["learning"],
   },
   {

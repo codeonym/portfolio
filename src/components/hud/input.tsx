@@ -19,7 +19,8 @@ function typing(e: KeyboardEvent) {
 
 /**
  * Keyboard → `live.input` (movement never touches React state) plus
- * the command keys: E interact · M map · Esc back · 1–6 walk to a zone.
+ * the command keys: E interact · T speak with THE SYSTEM · M map · Esc
+ * back · 1–6 walk to a zone.
  */
 export function KeyboardInput() {
   useEffect(() => {
@@ -45,6 +46,16 @@ export function KeyboardInput() {
           play("close");
           return s.closePanel();
         }
+        if (s.dialogueOpen) {
+          play("close");
+          return s.setDialogueOpen(false);
+        }
+      }
+      if (e.code === "KeyT") {
+        // speak with THE SYSTEM — the key itself must not land in the chat input
+        e.preventDefault();
+        if (!s.dialogueOpen) play("open");
+        return s.setDialogueOpen(!s.dialogueOpen);
       }
       if (e.code === "KeyE" && s.nearZone && !s.panel) {
         play("open");

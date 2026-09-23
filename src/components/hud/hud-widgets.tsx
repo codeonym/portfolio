@@ -7,6 +7,7 @@ import {
   ChevronDown,
   Gauge,
   Map as MapIcon,
+  MessageSquareText,
   Sparkle,
   Volume2,
   VolumeX,
@@ -194,33 +195,59 @@ export function LevelUp() {
 export function InteractPrompt() {
   const near = useWorldStore((s) => s.nearZone);
   const panel = useWorldStore((s) => s.panel);
+  const dialogue = useWorldStore((s) => s.dialogueOpen);
   const touch = useWorldStore((s) => s.touch);
   const openPanel = useWorldStore((s) => s.openPanel);
+  const setDialogueOpen = useWorldStore((s) => s.setDialogueOpen);
   const zone = near ? zoneById[near] : null;
+  // the hologram above the Awakening Circle is THE SYSTEM itself
+  const canSpeak = near === "awakening" && !dialogue;
   return (
-    <AnimatePresence>
-      {zone && !panel && (
-        <motion.button
-          key={zone.id}
-          type="button"
-          initial={{ opacity: 0, y: 16, scale: 0.9 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 10 }}
-          onClick={() => {
-            play("open");
-            openPanel(zone.id);
-          }}
-          className="hud-chip pointer-events-auto gap-3 px-6 py-3"
-          style={{ boxShadow: `0 0 30px ${toneColor[zone.tone]}55` }}
-        >
-          <span className="kbd">{touch ? world.hud.tapPrompt : world.hud.promptKey}</span>
-          <span className="text-base font-semibold">
-            {zone.verb} <span style={{ color: toneColor[zone.tone] }}>{zone.name}</span>
-          </span>
-          <span className="hidden text-xs text-muted-foreground sm:inline">· {zone.section}</span>
-        </motion.button>
-      )}
-    </AnimatePresence>
+    <div className="flex flex-wrap items-center justify-center gap-2">
+      <AnimatePresence>
+        {zone && !panel && (
+          <motion.button
+            key={zone.id}
+            type="button"
+            initial={{ opacity: 0, y: 16, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10 }}
+            onClick={() => {
+              play("open");
+              openPanel(zone.id);
+            }}
+            className="hud-chip pointer-events-auto gap-3 px-6 py-3"
+            style={{ boxShadow: `0 0 30px ${toneColor[zone.tone]}55` }}
+          >
+            <span className="kbd">{touch ? world.hud.tapPrompt : world.hud.promptKey}</span>
+            <span className="text-base font-semibold">
+              {zone.verb} <span style={{ color: toneColor[zone.tone] }}>{zone.name}</span>
+            </span>
+            <span className="hidden text-xs text-muted-foreground sm:inline">· {zone.section}</span>
+          </motion.button>
+        )}
+        {canSpeak && !panel && (
+          <motion.button
+            key="speak"
+            type="button"
+            initial={{ opacity: 0, y: 16, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1, transition: { delay: 0.12 } }}
+            exit={{ opacity: 0, y: 10 }}
+            onClick={() => {
+              play("open");
+              setDialogueOpen(true);
+            }}
+            className="hud-chip pointer-events-auto gap-3 px-6 py-3"
+            style={{ boxShadow: `0 0 30px ${toneColor.system}66` }}
+          >
+            <span className="kbd">{touch ? world.hud.tapPrompt : world.agent.promptKey}</span>
+            <span className="text-base font-semibold">
+              {world.agent.promptVerb} <span style={{ color: toneColor.system }}>{world.agent.name}</span>
+            </span>
+          </motion.button>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
@@ -234,8 +261,24 @@ export function SystemControls() {
   const setQuality = useWorldStore((s) => s.setQuality);
   const mapOpen = useWorldStore((s) => s.mapOpen);
   const setMapOpen = useWorldStore((s) => s.setMapOpen);
+  const dialogue = useWorldStore((s) => s.dialogueOpen);
+  const setDialogueOpen = useWorldStore((s) => s.setDialogueOpen);
   return (
     <div className="pointer-events-auto flex gap-1.5">
+      <button
+        type="button"
+        aria-label={`${world.agent.promptVerb} ${world.agent.name}`}
+        data-active={dialogue}
+        onClick={() => {
+          play(dialogue ? "close" : "open");
+          setDialogueOpen(!dialogue);
+        }}
+        className="hud-chip h-9 px-3"
+      >
+        <MessageSquareText className="size-4 text-system" />
+        <span className="hidden font-display text-[9px] tracking-[0.2em] sm:inline">SYSTEM</span>
+        <span className="kbd hidden sm:inline-grid">{world.agent.promptKey}</span>
+      </button>
       <button type="button" aria-label="World map" data-active={mapOpen} onClick={() => { play("open"); setMapOpen(!mapOpen); }} className="hud-chip h-9 px-3">
         <MapIcon className="size-4" />
         <span className="kbd hidden sm:inline-grid">M</span>

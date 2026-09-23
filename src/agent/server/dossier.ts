@@ -1,0 +1,133 @@
+import "server-only";
+import { achievements, chronicle } from "@/config/chronicle.config";
+import { inventoryCategories, inventoryItems } from "@/config/inventory.config";
+import { player } from "@/config/player.config";
+import { quests } from "@/config/quests.config";
+import { skillCategories, skills } from "@/config/skills.config";
+import { visitorQuests, zones } from "@/config/world.config";
+
+/**
+ * ── THE PLAYER DOSSIER ────────────────────────────────────────
+ * Grounding for the agent, rendered from the same typed configs the
+ * world displays — edit `src/config/*` and the System knows it on
+ * the next request. Two granularities:
+ *
+ *  · `dossierDigest` — compact, always in the system prompt
+ *  · `archive(section)` — full records, fetched by the
+ *    `consult_archive` tool when a visitor digs deeper
+ */
+
+const grade = (m: number) => (m >= 90 ? "S" : m >= 85 ? "A" : m >= 78 ? "B" : "C");
+
+function identity() {
+  return [
+    `Name: ${player.name} (handle "${player.handle}")`,
+    `Role: ${player.job} — ${player.title}`,
+    `Guild (employer): ${player.guild} · Location: ${player.location}`,
+    `Hunter rank ${player.rank} · LV.${player.level} (${player.rankNote})`,
+    `Languages: ${player.languages.map((l) => `${l.name} (${l.grade})`).join(", ")}`,
+    `Links: GitHub ${player.links.github} · LinkedIn ${player.links.linkedin} · Email ${player.links.email}`,
+  ].join("\n");
+}
+
+function profile() {
+  return [
+    ...player.profile,
+    `Creed: "${player.creed}"`,
+    `Titles: ${player.titles.map((t) => `${t.name} — ${t.description}`).join(" | ")}`,
+    `Stats: ${player.stats.map((s) => `${s.code} ${s.value} (${s.label})`).join(", ")}`,
+  ].join("\n");
+}
+
+function experience() {
+  return chronicle
+    .map((c) => `- ${c.period} · ${c.role} @ ${c.organization}\n  ${c.summary}\n  Highlights: ${c.highlights.join("; ")}`)
+    .join("\n");
+}
+
+function education() {
+  return achievements.map((a) => `- ${a.period} · ${a.title} — ${a.issuer}`).join("\n");
+}
+
+function projects(full: boolean) {
+  return quests
+    .map((q) => {
+      const head = `- [${q.id}] ${q.name} · ${q.type === "main" ? "main quest" : "side quest"} · rank ${q.rank} · ${q.status}${q.period ? ` · ${q.period}` : ""}`;
+      const body = full
+        ? `\n  ${q.summary}\n  ${q.details.map((d) => `• ${d}`).join("\n  ")}\n  Stack: ${q.rewards.join(", ")}${q.link ? `\n  Link: ${q.link}` : ""}`
+        : `\n  ${q.summary} Stack: ${q.rewards.join(", ")}`;
+      return head + body;
+    })
+    .join("\n");
+}
+
+function skillTree(full: boolean) {
+  return skillCategories
+    .map((c) => {
+      const list = skills.filter((s) => s.category === c.id);
+      const items = full
+        ? list.map((s) => `  - [${s.id}] ${s.name} · grade ${grade(s.mastery)} (${s.mastery}) · ${s.rarity} — ${s.lore}`).join("\n")
+        : `  ${list.map((s) => `${s.name} [${s.id}] ${grade(s.mastery)}`).join(", ")}`;
+      return `${c.name} (${c.set === "job" ? "job skill" : "secondary"}):\n${items}`;
+    })
+    .join("\n");
+}
+
+function inventory(full: boolean) {
+  return inventoryCategories
+    .map((c) => {
+      const list = inventoryItems.filter((i) => i.category === c.id);
+      const items = list
+        .map((i) => (full ? `  - [${i.id}] ${i.name} · ${i.rarity}${i.meta ? ` · ${i.meta}` : ""} — ${i.lore}` : `${i.name} [${i.id}]`))
+        .join(full ? "\n" : ", ");
+      return `${c.name}: ${full ? `\n${items}` : items}`;
+    })
+    .join("\n");
+}
+
+function world() {
+  const zoneLines = zones.map((z) => `- ${z.id}: ${z.name} → ${z.section}. ${z.description}`).join("\n");
+  const questLines = visitorQuests.map((q) => `- ${q.id}: "${q.name}" — ${q.objective} (+${q.xp} XP)`).join("\n");
+  return `Zones of the island (each opens a System window / tab):\n${zoneLines}\nVisitor quests (the visitor earns XP by exploring):\n${questLines}`;
+}
+
+export const dossierDigest = [
+  "## IDENTITY",
+  identity(),
+  "## PROFILE",
+  profile(),
+  "## EXPERIENCE (Guild Hall)",
+  experience(),
+  "## EDUCATION",
+  education(),
+  "## PROJECTS = QUESTS (Shadow Crypt; ids in brackets)",
+  projects(false),
+  "## SKILLS (Armory; ids in brackets, grade S≥90 A≥85 B≥78)",
+  skillTree(false),
+  "## INVENTORY (Treasury; ids in brackets)",
+  inventory(false),
+  "## THE WORLD",
+  world(),
+].join("\n");
+
+export const ARCHIVE_SECTIONS = ["identity", "experience", "education", "projects", "skills", "inventory", "world"] as const;
+export type ArchiveSection = (typeof ARCHIVE_SECTIONS)[number];
+
+export function archive(section: ArchiveSection): string {
+  switch (section) {
+    case "identity":
+      return `${identity()}\n${profile()}`;
+    case "experience":
+      return experience();
+    case "education":
+      return education();
+    case "projects":
+      return projects(true);
+    case "skills":
+      return skillTree(true);
+    case "inventory":
+      return inventory(true);
+    case "world":
+      return world();
+  }
+}

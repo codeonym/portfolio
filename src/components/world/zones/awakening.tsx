@@ -15,6 +15,7 @@ import {
   type Mesh,
 } from "three";
 import { zoneById } from "@/config/world.config";
+import { live } from "@/store/world-store";
 import { ASSETS, COLORS } from "../assets";
 import { Forged } from "../models";
 
@@ -84,14 +85,19 @@ function PlayerHologram() {
     };
   }, [scene, animations]);
 
+  // THE SYSTEM lives in this hologram: while the agent thinks, the rings spin up
+  const surge = useRef(1);
   useFrame(({ clock }, delta) => {
     mixer.current?.update(Math.min(delta, 0.05));
     const t = clock.elapsedTime;
-    if (holo.current) holo.current.position.y = ALTAR_TOP + 0.3 + Math.sin(t * 0.8) * 0.12;
+    surge.current += ((live.agentBusy ? 6 : 1) - surge.current) * Math.min(1, delta * 2.5);
+    const k = surge.current;
+    if (holo.current) holo.current.position.y = ALTAR_TOP + 0.3 + Math.sin(t * 0.8 * Math.sqrt(k)) * 0.12 * Math.min(k, 2);
     if (rings.current) {
-      rings.current.children[0].rotation.z += delta * 0.3;
-      rings.current.children[1].rotation.z -= delta * 0.2;
-      rings.current.children[2].rotation.z += delta * 0.12;
+      rings.current.children[0].rotation.z += delta * 0.3 * k;
+      rings.current.children[1].rotation.z -= delta * 0.2 * k;
+      rings.current.children[2].rotation.z += delta * 0.12 * k;
+      rings.current.scale.setScalar(1 + (k - 1) * 0.03);
     }
   });
 

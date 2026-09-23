@@ -85,7 +85,9 @@ export function FollowCamera() {
     const camera = state.camera as PerspectiveCamera;
     const clock = state.clock;
     const delta = Math.min(rawDelta, 0.05);
-    const { phase, panel, touch } = useWorldStore.getState();
+    const { phase, panel, touch, dialogueOpen, nearZone } = useWorldStore.getState();
+    // speaking with THE SYSTEM at its hologram: frame it beside the dialogue
+    const focus = panel ?? (dialogueOpen && nearZone === "awakening" ? "awakening" : null);
     const t = clock.elapsedTime;
     let damp = 3.2;
     let wantOffset = { x: 0, y: 0 };
@@ -96,8 +98,8 @@ export function FollowCamera() {
       desired.current.set(Math.sin(a) * 46, 24 + Math.sin(t * 0.2) * 3, Math.cos(a) * 46);
       desiredLook.current.set(0, -2, -4);
       damp = 1.2;
-    } else if (panel) {
-      const zone = zoneById[panel];
+    } else if (focus) {
+      const zone = zoneById[focus];
       const [zx, zz] = zone.position;
       const len = Math.hypot(zx, zz);
       // stand between the landmark and the island center, a little above
@@ -109,10 +111,12 @@ export function FollowCamera() {
       const c = Math.cos(swing);
       const sn = Math.sin(swing);
       [ux, uz] = [ux * c - uz * sn, ux * sn + uz * c];
-      const back = zone.radius + (panel === "gate" ? 12 : 8.5);
-      desired.current.set(zx + ux * back, panel === "gate" ? 7.5 : 7.5, zz + uz * back);
-      desiredLook.current.set(zx, panel === "gate" ? 5.5 : 2, zz);
-      wantOffset = touch ? { x: 0, y: size.height * 0.22 } : { x: size.width * 0.2, y: 0 };
+      const talking = !panel;
+      const back = zone.radius + (focus === "gate" ? 12 : talking ? 6.5 : 8.5);
+      desired.current.set(zx + ux * back, talking ? 6 : 7.5, zz + uz * back);
+      desiredLook.current.set(zx, focus === "gate" ? 5.5 : talking ? 4.2 : 2, zz);
+      // the zone panel sits right, the dialogue left (desktop); both are bottom sheets on touch
+      wantOffset = touch ? { x: 0, y: size.height * 0.22 } : { x: size.width * (talking ? -0.17 : 0.2), y: 0 };
       damp = 2.4;
     } else {
       const h = live.hunter;
@@ -143,7 +147,7 @@ export function FollowCamera() {
     aberration.set(ab, ab);
 
     // after a focus shot, resume following from wherever the camera ended up
-    if (phase === "world" && panel) {
+    if (phase === "world" && focus) {
       const dx = camera.position.x - live.hunter.x;
       const dz = camera.position.z - live.hunter.z;
       yaw.current = Math.atan2(dx, dz);

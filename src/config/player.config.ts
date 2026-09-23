@@ -8,8 +8,8 @@ import type { Player } from "./types";
 export const player: Player = {
   name: "BOUAROUR AYOUB",
   handle: "codeonym",
-  title: "Agentic Systems Developer",
-  job: "AI Software Engineer",
+  title: "AI Agent Engineer",
+  job: "Software Engineer",
   location: "Oujda, Morocco",
   guild: "OpenSNZ-Technology",
   // months of XP since the journey began (2019)
@@ -43,12 +43,12 @@ export const player: Player = {
     },
   ],
   profile: [
-    "AI Software Engineer specializing in the design and development of agentic AI systems — from LLM-driven workflows to autonomous AI agents and multi-agent architectures (MAS).",
-    "Skilled in connecting AI agents to legacy and enterprise systems, grounding them with rich contextual data via MCP, and deploying them into real-world applications with AG-UI and CopilotKit for seamless human-AI interaction.",
-    "Driven by the belief that software is evolving toward a new paradigm where LLMs act as operating systems and natural language becomes the primary programming interface.",
+    "AI Agent Engineer focused on designing and shipping production-grade multi-agent systems — from LLM-driven workflows to autonomous agents grounded in enterprise data via MCP, and delivered to end users through CopilotKit/AG-UI.",
+    "Drawn to agent engineering because it is still frontier work: there is no well-trodden path, so every experiment — and every failure — moves the discipline forward. Traditional software optimizes for known paths; agent engineering asks you to build the paradigm, not just implement it.",
+    "Builds agents as systems meant to evolve — gaining capability, sharpening reasoning and getting measurably better with every iteration. That mindset shapes his context engineering, evaluation and observability work.",
   ],
   creed:
-    "I don't build AI agents as traditional software. I build them as digital entities that continuously evolve, acquire new capabilities, and grow more competent over time — like leveling up a game character, unlocking new skills, and watching it grow.",
+    "I don't build AI agents as traditional software. I build them as systems meant to evolve — gaining capability, sharpening reasoning, and getting measurably better with every iteration. Closer to leveling up a character than shipping a fixed feature.",
   stats: [
     { code: "INT", label: "Agentic AI & Multi-Agent Systems", value: 94 },
     { code: "MP", label: "Prompt & Context Engineering", value: 92 },
