@@ -43,7 +43,7 @@ import type { SkillCategoryDef, SkillDetail, SkillSetDef } from "./types";
  * the job isn't — tongues, soft skills, pursuits). Mastery is
  * 0–100 and maps to grades in the UI: ≥90 S · ≥85 A · ≥78 B · else C.
  * rarity drives the glow: legendary > epic > rare > common.
- * Clicking any skill opens its lore in the INFO window.
+ * Clicking any skill opens its lore on the inspect card.
  */
 export const skillSets: SkillSetDef[] = [
   {

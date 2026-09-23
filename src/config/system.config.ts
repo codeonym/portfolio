@@ -3,14 +3,12 @@ import type { SystemConfig } from "./types";
 
 /**
  * ── SYSTEM SETTINGS ───────────────────────────────────────────
- * Every piece of UI copy and ambience tuning in one place: boot
- * sequence, notifications, ticker, log stream, vitals, XP.
+ * Version, vitals, ambient System notifications and the copy for
+ * the error / 404 screens. World + HUD copy lives in world.config.
  * Edit freely — the types in ./types.ts keep the UI safe.
  */
 export const systemConfig: SystemConfig = {
-  version: "4.8",
-  xpProgress: 64,
-
+  version: "5.0",
   vitals: [
     {
       code: "HP",
@@ -30,37 +28,7 @@ export const systemConfig: SystemConfig = {
     },
   ],
 
-  boot: {
-    lines: [
-      "> SCANNING VESSEL .................. OK",
-      "> ESTABLISHING MANA LINK ........... OK",
-      "> LOADING PLAYER RECORD ............ LV.82",
-      "> SYNCING AGENT NETWORK ............ 6/6 AGENTS ONLINE",
-      "> CALIBRATING CONTEXT WINDOW ....... 128K TOKENS",
-      "> IGNITING RENDER CORE ............. WEBGL ONLINE",
-    ],
-    notification: {
-      heading: "NOTIFICATION",
-      body: "You have acquired the qualifications to enter the domain of the Player.",
-      question: "Will you accept?",
-      name: "[ CODEONYM ]",
-      accept: "ACCEPT",
-      decline: "DECLINE",
-      declineRejected: "⚠ REFUSAL IS NOT RECOGNIZED BY THE SYSTEM",
-    },
-    skipLabel: "[ skip sequence ]",
-  },
-
-  ticker: [
-    "ALL AGENTS OPERATIONAL",
-    "MANA FLOW STABLE",
-    "6 AGENTS ON PATROL",
-    "NO ANOMALIES DETECTED",
-    "GATE SCAN: 6 QUESTS ON RECORD",
-    "CONTEXT INTEGRITY 100%",
-  ],
-
-  eventIntervalMs: 26000,
+  eventIntervalMs: 40000,
   ambientEvents: [
     {
       heading: "QUEST UPDATE",
@@ -79,7 +47,7 @@ export const systemConfig: SystemConfig = {
     },
     {
       heading: "PARTY REQUEST",
-      body: "A visitor wishes to form a party. Open [ NETWORK ] to respond.",
+      body: "A visitor wishes to form a party. The Shadow Gate is open.",
       tone: "system",
     },
     {
@@ -103,34 +71,6 @@ export const systemConfig: SystemConfig = {
       tone: "gold",
     },
   ],
-
-  logLines: [
-    "spawn agent.worker#04 .......... ok",
-    "ctx.window 128K ............ nominal",
-    "mcp: 3 servers connected",
-    "rag.index refreshed (Δ128 docs)",
-    "langgraph: checkpoint saved",
-    "traces exported → otel collector",
-    "guardrail: output check passed",
-    "queue: 0 pending quests",
-    "heartbeat <ping> 12ms",
-    "memory.graph +2 nodes linked",
-    "copilotkit: ag-ui channel open",
-    "mana.regen +5/s (idle bonus)",
-    "render.core 60fps ........ hologram",
-  ],
-
-  avatarCaption: "[ ARISE · THE SHADOW LEGION STANDS BEHIND ITS MONARCH ]",
-  dockFooter: "SYSTEM v4.8 · forged by codeonym · ARISE — the legion answers only to its Monarch",
-
-  unsupported: {
-    error: "⚠ SYSTEM ERROR",
-    heading: "UNSUPPORTED VESSEL",
-    title: "DISPLAY TOO SMALL TO MANIFEST THE SYSTEM",
-    body: "This interface is a full desktop operating system and requires a laptop or desktop terminal (≥ 1024px wide). Return through a larger gate, Player.",
-    footer: "[ CONNECTION HELD · AWAITING SUITABLE HARDWARE ]",
-  },
-
   runtimeError: {
     error: "⚠ CRITICAL FAULT",
     heading: "SYSTEM CRASH",
@@ -146,6 +86,6 @@ export const systemConfig: SystemConfig = {
     title: "THIS GATE LEADS NOWHERE",
     body: "The coordinates you followed don't resolve to a sector within the System. It may have been sealed or never existed.",
     footer: "[ NAVIGATION FAILED · NO ACTIVE GATE ]",
-    cta: "RETURN TO STAGE",
+    cta: "RETURN TO THE ISLAND",
   },
 };

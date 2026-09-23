@@ -11,25 +11,16 @@
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-michroma);
   --font-display: var(--font-michroma);
+  --color-void: var(--void);
   --color-system: var(--system);
   --color-system-dim: var(--system-dim);
   --color-arcane: var(--arcane);
+  --color-arcane-hot: var(--arcane-hot);
+  --color-ember: var(--ember);
+  --color-gold: var(--rank-s);
   --color-rank-s: var(--rank-s);
   --color-rank-a: var(--rank-a);
   --color-rank-b: var(--rank-b);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -50,61 +41,48 @@
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
-  --animate-scanline: scanline 8s linear infinite;
-  --animate-flicker: flicker 4s linear infinite;
-  --animate-pulse-glow: pulse-glow 2.4s ease-in-out infinite;
   --animate-blink: blink 1s step-end infinite;
   --animate-aura-pulse: aura-pulse 5s ease-in-out infinite;
 }
 
 /* The System is dark by nature — a single dark theme. */
 :root {
-  --system: oklch(0.72 0.14 235);
-  --system-dim: oklch(0.72 0.14 235 / 40%);
-  --arcane: oklch(0.6 0.21 295);
-  --rank-s: oklch(0.78 0.15 85);
-  --rank-a: oklch(0.6 0.21 295);
-  --rank-b: oklch(0.72 0.14 235);
+  --void: #05040b;
+  --system: oklch(0.76 0.14 230);
+  --system-dim: oklch(0.76 0.14 230 / 40%);
+  --arcane: oklch(0.62 0.22 295);
+  --arcane-hot: oklch(0.74 0.17 300);
+  --ember: oklch(0.7 0.19 40);
+  --rank-s: oklch(0.8 0.15 80);
+  --rank-a: oklch(0.62 0.22 295);
+  --rank-b: oklch(0.76 0.14 230);
 
-  --background: oklch(0.14 0.025 262);
-  --foreground: oklch(0.93 0.015 240);
-  --card: oklch(0.18 0.03 260);
-  --card-foreground: oklch(0.93 0.015 240);
-  --popover: oklch(0.16 0.03 260);
-  --popover-foreground: oklch(0.93 0.015 240);
-  --primary: var(--system);
-  --primary-foreground: oklch(0.13 0.03 260);
-  --secondary: oklch(0.24 0.04 262);
-  --secondary-foreground: oklch(0.93 0.015 240);
-  --muted: oklch(0.22 0.03 260);
-  --muted-foreground: oklch(0.68 0.03 245);
-  --accent: oklch(0.26 0.06 280);
-  --accent-foreground: oklch(0.93 0.015 240);
-  --destructive: oklch(0.6 0.22 25);
-  --border: oklch(0.72 0.14 235 / 22%);
-  --input: oklch(0.72 0.14 235 / 18%);
-  --ring: var(--system);
-  --chart-1: var(--system);
-  --chart-2: var(--arcane);
-  --chart-3: oklch(0.78 0.15 85);
-  --chart-4: oklch(0.68 0.03 245);
-  --chart-5: oklch(0.45 0.1 262);
-  --radius: 0.25rem;
-  --sidebar: oklch(0.16 0.03 260);
-  --sidebar-foreground: oklch(0.93 0.015 240);
-  --sidebar-primary: var(--system);
-  --sidebar-primary-foreground: oklch(0.13 0.03 260);
-  --sidebar-accent: oklch(0.24 0.04 262);
-  --sidebar-accent-foreground: oklch(0.93 0.015 240);
-  --sidebar-border: oklch(0.72 0.14 235 / 22%);
-  --sidebar-ring: var(--system);
+  --background: #05040b;
+  --foreground: oklch(0.94 0.012 280);
+  --card: oklch(0.14 0.03 290);
+  --card-foreground: oklch(0.94 0.012 280);
+  --popover: oklch(0.13 0.03 290);
+  --popover-foreground: oklch(0.94 0.012 280);
+  --primary: var(--arcane);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.2 0.04 290);
+  --secondary-foreground: oklch(0.94 0.012 280);
+  --muted: oklch(0.2 0.03 290);
+  --muted-foreground: oklch(0.7 0.03 285);
+  --accent: oklch(0.26 0.07 295);
+  --accent-foreground: oklch(0.94 0.012 280);
+  --destructive: oklch(0.62 0.22 25);
+  --border: oklch(0.62 0.22 295 / 26%);
+  --input: oklch(0.62 0.22 295 / 20%);
+  --ring: var(--arcane);
+  --radius: 0.2rem;
+
+  /* panel glass */
+  --glass: linear-gradient(160deg, oklch(0.15 0.04 295 / 88%), oklch(0.09 0.03 285 / 94%));
+  --edge: linear-gradient(135deg, var(--arcane-hot), oklch(0.62 0.22 295 / 20%) 35%, oklch(0.76 0.14 230 / 18%) 70%, var(--system));
 }
 
 .dark {
-  /* dark-only site: same tokens as :root, kept so `dark:` variants resolve */
   color-scheme: dark;
 }
 
@@ -112,113 +90,273 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html,
   body {
-    @apply bg-background text-foreground;
-    text-rendering: optimizeLegibility;
+    height: 100%;
+    overscroll-behavior: none;
   }
-  html {
-    @apply font-sans scroll-smooth;
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    text-rendering: optimizeLegibility;
+    -webkit-tap-highlight-color: transparent;
   }
   ::selection {
-    background: oklch(0.72 0.14 235 / 30%);
+    background: oklch(0.62 0.22 295 / 35%);
+  }
+  /* thin arcane scrollbars inside panels */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(0.62 0.22 295 / 45%) transparent;
   }
 }
 
 @layer components {
-  /* HUD frame: glowing border + corner brackets, used by SystemPanel */
-  .system-frame {
-    position: relative;
-    border: 1px solid var(--border);
-    /* near-opaque over the 3D scene so window text stays readable */
-    background:
-      linear-gradient(oklch(0.18 0.03 260 / 94%), oklch(0.16 0.03 262 / 97%));
-    box-shadow:
-      0 0 12px oklch(0.72 0.14 235 / 12%),
-      inset 0 0 24px oklch(0.72 0.14 235 / 5%);
-    backdrop-filter: blur(10px);
-  }
-  .system-frame::before,
-  .system-frame::after {
+  /* ── film grain + scan over everything (cheap, pure CSS) ── */
+  .grain::after {
     content: "";
-    position: absolute;
-    width: 14px;
-    height: 14px;
-    border-color: var(--system);
-    border-style: solid;
+    position: fixed;
+    inset: -50%;
+    z-index: 80;
     pointer-events: none;
-  }
-  .system-frame::before {
-    top: -1px;
-    left: -1px;
-    border-width: 2px 0 0 2px;
-  }
-  .system-frame::after {
-    bottom: -1px;
-    right: -1px;
-    border-width: 0 2px 2px 0;
+    opacity: 0.06;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation: grain 0.9s steps(4) infinite;
   }
 
-  /* focused/topmost window: swap the ambient glow to the arcane aura */
-  .system-frame--focused {
-    border-color: oklch(0.6 0.21 295 / 45%);
-    box-shadow:
-      0 0 20px oklch(0.6 0.21 295 / 28%),
-      inset 0 0 28px oklch(0.6 0.21 295 / 8%);
+  /* ── notched obsidian glass: the signature surface ── */
+  .notch {
+    --n: 14px;
+    clip-path: polygon(
+      var(--n) 0,
+      100% 0,
+      100% calc(100% - var(--n)),
+      calc(100% - var(--n)) 100%,
+      0 100%,
+      0 var(--n)
+    );
   }
-  .system-frame--focused::before,
-  .system-frame--focused::after {
-    border-color: var(--arcane);
+  .glass {
+    position: relative;
+    background: var(--glass);
+    backdrop-filter: blur(14px) saturate(1.3);
+  }
+  /* 1px gradient edge drawn with a mask so it follows the notch */
+  .glass-edge::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    background: var(--edge);
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    clip-path: inherit;
+  }
+
+  .sys-panel {
+    box-shadow:
+      0 30px 80px -20px oklch(0 0 0 / 80%),
+      0 0 60px -10px oklch(0.62 0.22 295 / 30%);
+  }
+  /* a scan line that sweeps the panel once as it materializes */
+  .sys-panel__scan {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 120px;
+    top: -120px;
+    background: linear-gradient(to bottom, transparent, oklch(0.74 0.17 300 / 16%), transparent);
+    animation: panel-scan 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) 0.1s 1 forwards;
+    pointer-events: none;
+  }
+
+  /* section heading: ◆ LABEL ────────── */
+  .sys-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--font-michroma);
+    font-size: 10px;
+    letter-spacing: 0.28em;
+    color: var(--arcane-hot);
+    text-transform: uppercase;
+  }
+  .sys-heading::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    transform: rotate(45deg);
+    background: currentColor;
+    box-shadow: 0 0 10px currentColor;
+  }
+  .sys-heading::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, oklch(0.62 0.22 295 / 45%), transparent);
+  }
+
+  /* ── HUD chip: angular parallelogram buttons ── */
+  .hud-chip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    color: var(--foreground);
+    background: oklch(0.12 0.035 290 / 78%);
+    backdrop-filter: blur(10px);
+    border: 1px solid oklch(0.62 0.22 295 / 35%);
+    clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+    transition:
+      background 0.2s,
+      border-color 0.2s,
+      color 0.2s,
+      transform 0.2s;
+  }
+  .hud-chip:hover {
+    background: oklch(0.2 0.07 295 / 85%);
+    border-color: var(--arcane-hot);
+    color: white;
+  }
+  .hud-chip:active {
+    transform: scale(0.97);
+  }
+  .hud-chip[data-active="true"] {
+    background: oklch(0.62 0.22 295 / 30%);
+    border-color: var(--arcane-hot);
+    box-shadow: inset 0 0 18px oklch(0.62 0.22 295 / 35%);
+  }
+
+  .kbd {
+    display: inline-grid;
+    place-items: center;
+    min-width: 1.35rem;
+    height: 1.35rem;
+    padding: 0 0.3rem;
+    font-family: var(--font-michroma);
+    font-size: 9px;
+    color: var(--system);
+    border: 1px solid oklch(0.76 0.14 230 / 50%);
+    background: oklch(0.76 0.14 230 / 10%);
+    box-shadow: 0 2px 0 oklch(0.76 0.14 230 / 30%);
+  }
+
+  /* ── in-world labels (drei <Html>) ── */
+  .zone-tag {
+    color: var(--tone);
+    background: oklch(0.08 0.03 290 / 80%);
+    border: 1px solid color-mix(in oklch, var(--tone) 55%, transparent);
+    clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+    backdrop-filter: blur(6px);
+    text-shadow: 0 0 10px var(--tone);
+    box-shadow: inset 0 0 16px color-mix(in oklch, var(--tone) 18%, transparent);
+    transition:
+      transform 0.25s,
+      background 0.25s;
+  }
+  .zone-tag:hover,
+  .zone-tag--near {
+    transform: scale(1.08);
+    background: color-mix(in oklch, var(--tone) 22%, oklch(0.08 0.03 290 / 85%));
+    color: white;
+  }
+  .zone-tag__new {
+    font-family: var(--font-michroma);
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    padding: 1px 4px;
+    color: var(--void);
+    background: var(--tone);
+    animation: blink 1.2s step-end infinite;
+  }
+
+  .arise-tag {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    white-space: nowrap;
+    padding: 0.3rem 0.55rem 0.3rem 0.3rem;
+    color: #e9ddff;
+    background: oklch(0.07 0.03 290 / 85%);
+    border: 1px solid oklch(0.62 0.22 295 / 55%);
+    clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+    cursor: pointer;
+    transition:
+      transform 0.2s,
+      background 0.2s;
+  }
+  .arise-tag:hover {
+    transform: translateY(-2px) scale(1.05);
+    background: oklch(0.3 0.12 295 / 85%);
+  }
+  .arise-tag__rank {
+    display: grid;
+    place-items: center;
+    width: 1.3rem;
+    height: 1.3rem;
+    font-family: var(--font-michroma);
+    font-size: 10px;
+    color: var(--system);
+    border: 1px solid currentColor;
+  }
+  .arise-tag--s .arise-tag__rank {
+    color: var(--rank-s);
+    box-shadow: 0 0 10px oklch(0.8 0.15 80 / 50%);
+  }
+  .arise-tag__name {
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .arise-tag__cmd {
+    font-family: var(--font-michroma);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--arcane-hot);
+    text-shadow: 0 0 10px var(--arcane);
+  }
+
+  /* ── gauges ── */
+  .bar {
+    position: relative;
+    height: 6px;
+    background: oklch(1 0 0 / 7%);
+    overflow: hidden;
+    clip-path: polygon(3px 0, 100% 0, calc(100% - 3px) 100%, 0 100%);
+  }
+  .bar > span {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background: linear-gradient(90deg, var(--arcane), var(--arcane-hot), var(--system));
+    box-shadow: 0 0 12px var(--arcane);
+    transition: width 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .bar > span::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, transparent 30%, oklch(1 0 0 / 45%) 50%, transparent 70%);
+    transform: translateX(-100%);
+    animation: shimmer 2.8s ease-in-out infinite;
   }
 
   .text-glow {
     text-shadow:
-      0 0 8px oklch(0.72 0.14 235 / 60%),
-      0 0 24px oklch(0.72 0.14 235 / 30%);
+      0 0 8px oklch(0.76 0.14 230 / 60%),
+      0 0 24px oklch(0.76 0.14 230 / 30%);
   }
   .text-glow-arcane {
     text-shadow:
-      0 0 8px oklch(0.6 0.21 295 / 60%),
-      0 0 24px oklch(0.6 0.21 295 / 30%);
+      0 0 10px oklch(0.62 0.22 295 / 70%),
+      0 0 30px oklch(0.62 0.22 295 / 40%);
   }
-
-  /* full-viewport CRT scanline overlay */
-  .scanlines::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: 60;
-    pointer-events: none;
-    background: repeating-linear-gradient(
-      to bottom,
-      transparent 0px,
-      transparent 2px,
-      oklch(0 0 0 / 6%) 3px,
-      transparent 4px
-    );
-  }
-
-  /* faint honeycomb field behind the stage, faded at the edges */
-  .hex-grid {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100'%3E%3Cpath d='M28 66L0 50L0 16L28 0L56 16L56 50L28 66L28 100' fill='none' stroke='%2360a5fa' stroke-opacity='0.09'/%3E%3Cpath d='M28 0L28 34L0 50L0 84L28 100L56 84L56 50' fill='none' stroke='%2360a5fa' stroke-opacity='0.09'/%3E%3C/svg%3E");
-    mask-image: radial-gradient(ellipse at center, black 25%, transparent 78%);
-  }
-
-  /* light sweep across gauge fills (XP bar) */
-  .xp-shimmer {
-    position: relative;
-  }
-  .xp-shimmer::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      105deg,
-      transparent 25%,
-      oklch(1 0 0 / 22%) 50%,
-      transparent 75%
-    );
-    transform: translateX(-100%);
-    animation: shimmer 3.2s ease-in-out infinite;
+  .text-glow-gold {
+    text-shadow:
+      0 0 10px oklch(0.8 0.15 80 / 60%),
+      0 0 30px oklch(0.8 0.15 80 / 30%);
   }
 
   .glitch {
@@ -235,53 +373,69 @@
   .glitch::before {
     color: var(--system);
     animation: glitch-slice 3s steps(2, end) infinite;
-    transform: translateX(-2px);
+    transform: translateX(-3px);
   }
   .glitch::after {
-    color: var(--arcane);
+    color: var(--arcane-hot);
     animation: glitch-slice 3.1s steps(2, end) infinite reverse;
-    transform: translateX(2px);
+    transform: translateX(3px);
+  }
+
+  /* ── cinematic letterbox bars during focus / ARISE ── */
+  .letterbox::before,
+  .letterbox::after {
+    content: "";
+    position: fixed;
+    left: 0;
+    right: 0;
+    height: 0;
+    background: #000;
+    z-index: 5;
+    transition: height 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+    pointer-events: none;
+  }
+  .letterbox::before {
+    top: 0;
+  }
+  .letterbox::after {
+    bottom: 0;
+  }
+  .letterbox[data-on="true"]::before,
+  .letterbox[data-on="true"]::after {
+    height: 7vh;
+  }
+
+  /* legacy full-screen System interrupt frame (error / 404) */
+  .system-frame {
+    position: relative;
+    border: 1px solid var(--border);
+    background: var(--glass);
+    box-shadow: 0 0 40px oklch(0.62 0.22 295 / 20%);
+    backdrop-filter: blur(10px);
   }
 }
 
-@keyframes scanline {
+@keyframes grain {
   0% {
-    transform: translateY(-100%);
+    transform: translate(0, 0);
   }
-  100% {
-    transform: translateY(100vh);
-  }
-}
-
-@keyframes flicker {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  92% {
-    opacity: 1;
-  }
-  93% {
-    opacity: 0.6;
-  }
-  94% {
-    opacity: 1;
-  }
-  97% {
-    opacity: 0.8;
-  }
-  98% {
-    opacity: 1;
-  }
-}
-
-@keyframes pulse-glow {
-  0%,
-  100% {
-    box-shadow: 0 0 12px oklch(0.72 0.14 235 / 15%);
+  25% {
+    transform: translate(-5%, 3%);
   }
   50% {
-    box-shadow: 0 0 24px oklch(0.72 0.14 235 / 40%);
+    transform: translate(4%, -4%);
+  }
+  75% {
+    transform: translate(-3%, -2%);
+  }
+  100% {
+    transform: translate(2%, 5%);
+  }
+}
+
+@keyframes panel-scan {
+  to {
+    top: 110%;
   }
 }
 
@@ -298,33 +452,6 @@
   }
   50% {
     opacity: 1;
-  }
-}
-
-@keyframes float-y {
-  0%,
-  100% {
-    transform: translateY(4px);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
-}
-
-@keyframes scan-y {
-  0% {
-    top: 8%;
-    opacity: 0;
-  }
-  12% {
-    opacity: 0.8;
-  }
-  88% {
-    opacity: 0.8;
-  }
-  100% {
-    top: 90%;
-    opacity: 0;
   }
 }
 
@@ -360,23 +487,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .grain::after,
   .glitch::before,
-  .glitch::after {
+  .glitch::after,
+  .bar > span::after,
+  .sys-panel__scan {
     animation: none;
     content: none;
-  }
-  .scanlines::before {
-    content: none;
-  }
-  .xp-shimmer::after {
-    content: none;
-  }
-  .animate-\[float-y_6s_ease-in-out_infinite\],
-  .animate-\[scan-y_5s_linear_infinite\] {
-    animation: none;
-  }
-  .animate-aura-pulse {
-    animation: none;
-    opacity: 0.6;
   }
 }

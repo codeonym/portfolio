@@ -1,85 +1,61 @@
-import { useMemo } from "react";
-import type { AppId } from "@/config/apps.config";
-import { appList } from "@/config/apps.config";
-import { chronicle, achievements } from "@/config/chronicle.config";
-import {
-  inventoryCategories,
-  inventoryItems,
-} from "@/config/inventory.config";
+import { achievements, chronicle } from "@/config/chronicle.config";
+import { inventoryCategories, inventoryItems } from "@/config/inventory.config";
 import { player } from "@/config/player.config";
 import { quests } from "@/config/quests.config";
 import { skillCategories, skillSets, skills } from "@/config/skills.config";
 import { systemConfig } from "@/config/system.config";
-import type { InspectTarget } from "@/config/types";
-import { useFullscreen } from "@/hooks/use-fullscreen";
-import type { OsWindow, StageSize } from "@/store/os-store";
-import { topVisibleWindow, useOsStore } from "@/store/os-store";
-import { useSoundStore } from "@/store/sound-store";
+import type { Destination, InspectTarget, ZoneId } from "@/config/types";
+import { visitorQuests, zones } from "@/config/world.config";
+import { levelFor, live, useWorldStore } from "@/store/world-store";
 
 /**
  * ── AGENT BRIDGE · READ SIDE ──────────────────────────────────
  * One serializable snapshot of everything an AI agent needs to
- * reason about the System: live window geometry, the app registry,
- * and the Player's full dossier (CV data). Icons and React types
- * are stripped — every value here survives JSON.stringify.
+ * reason about the world: where the Hunter stands, which zone panel
+ * is open, the visitor's progress, and the Player's full dossier.
+ * Icons and React types are stripped — every value survives
+ * JSON.stringify.
  *
- * V5 wiring (CopilotKit v2): pass `useSystemSnapshot()` to
- * `useAgentContext`. For LangChain, serialize `getSystemSnapshot()`
- * into the model context. Commands live in ./system-commands.
+ * CopilotKit v2: pass `useSystemSnapshot()` to `useAgentContext`.
+ * LangChain: serialize `getSystemSnapshot()` into the model context.
  */
 
-export interface WindowSnapshot {
-  app: AppId;
-  title: string;
-  open: true;
-  minimized: boolean;
-  focused: boolean;
-  /** px, relative to the stage's top-left corner */
-  x: number;
-  y: number;
-  /** stacking order — higher is closer to the viewer */
-  z: number;
-  width: number;
-  /** null = window sizes itself to its content */
-  height: number | null;
-}
-
-export interface AppSnapshot {
-  app: AppId;
-  title: string;
+export interface ZoneSnapshot {
+  zone: ZoneId;
+  name: string;
+  section: string;
   description: string;
-  open: boolean;
+  position: [number, number];
+  discovered: boolean;
 }
 
 export interface SystemSnapshot {
-  system: {
-    version: string;
-    /** the draggable window area, in px */
-    stage: StageSize;
-    soundMuted: boolean;
-    fullscreen: boolean;
+  system: { version: string; soundMuted: boolean; quality: string; touch: boolean };
+  world: {
+    hunter: { x: number; z: number; moving: boolean };
+    /** zone the Hunter stands in, if any */
+    nearZone: ZoneId | null;
+    /** zone whose panel is open, if any */
+    openPanel: ZoneId | null;
+    cvOpen: boolean;
+    mapOpen: boolean;
+    inspectTarget: InspectTarget | null;
+    zones: ZoneSnapshot[];
   };
-  /** every installed app, whether its window is open or not */
-  apps: AppSnapshot[];
-  /** currently open windows with live geometry */
-  windows: WindowSnapshot[];
-  /** what the INFO window is currently showing, if anything */
-  inspectTarget: InspectTarget | null;
-  /** the Player's dossier — identity, stats, CV data */
+  visitor: {
+    level: number;
+    xp: number;
+    questsCompleted: string[];
+    quests: { id: string; name: string; objective: string; done: boolean }[];
+    /** quest (project) ids already extracted as shadows */
+    shadowsRisen: string[];
+  };
   player: typeof player;
   quests: typeof quests;
   skills: {
     sets: typeof skillSets;
     categories: { id: string; name: string; set: string }[];
-    skills: {
-      id: string;
-      name: string;
-      category: string;
-      rarity: string;
-      mastery: number;
-      lore: string;
-      tags?: string[];
-    }[];
+    skills: { id: string; name: string; category: string; rarity: string; mastery: number; lore: string; tags?: string[] }[];
   };
   chronicle: typeof chronicle;
   achievements: typeof achievements;
@@ -93,113 +69,80 @@ export interface SystemSnapshot {
       meta?: string;
       lore: string;
       tags?: string[];
-      /** USE-ing the item opens this app */
-      unlocks?: AppId;
-      /** USE-ing the item opens this external URL */
+      unlocks?: Destination;
       link?: string;
     }[];
   };
 }
 
-/** static part of the snapshot — configs never change at runtime */
+/** static part — configs never change at runtime */
 const dossier = {
   player,
   quests,
   skills: {
     sets: skillSets,
-    categories: skillCategories.map(({ id, name, set }) => ({
+    categories: skillCategories.map(({ id, name, set }) => ({ id, name, set })),
+    skills: skills.map(({ id, name, category, rarity, mastery, lore, tags }) => ({
       id,
       name,
-      set,
+      category,
+      rarity,
+      mastery,
+      lore,
+      ...(tags ? { tags } : {}),
     })),
-    skills: skills.map(
-      ({ id, name, category, rarity, mastery, lore, tags }) => ({
-        id,
-        name,
-        category,
-        rarity,
-        mastery,
-        lore,
-        ...(tags ? { tags } : {}),
-      }),
-    ),
   },
   chronicle,
   achievements,
   inventory: {
     categories: inventoryCategories.map(({ id, name }) => ({ id, name })),
-    items: inventoryItems.map(
-      ({ id, name, category, rarity, meta, lore, tags, unlocks, link }) => ({
-        id,
-        name,
-        category,
-        rarity,
-        ...(meta ? { meta } : {}),
-        lore,
-        ...(tags ? { tags } : {}),
-        ...(unlocks ? { unlocks } : {}),
-        ...(link ? { link } : {}),
-      }),
-    ),
+    items: inventoryItems.map(({ id, name, category, rarity, meta, lore, tags, unlocks, link }) => ({
+      id,
+      name,
+      category,
+      rarity,
+      lore,
+      ...(meta ? { meta } : {}),
+      ...(tags ? { tags } : {}),
+      ...(unlocks ? { unlocks } : {}),
+      ...(link ? { link } : {}),
+    })),
   },
-} as const;
+};
 
-function buildSnapshot(
-  windows: OsWindow[],
-  stage: StageSize,
-  soundMuted: boolean,
-  fullscreen: boolean,
-  inspectTarget: InspectTarget | null,
-): SystemSnapshot {
-  const focusedId = topVisibleWindow(windows)?.id;
+export function getSystemSnapshot(): SystemSnapshot {
+  const s = useWorldStore.getState();
   return {
-    system: {
-      version: systemConfig.version,
-      stage,
-      soundMuted,
-      fullscreen,
+    system: { version: systemConfig.version, soundMuted: s.muted, quality: s.quality, touch: s.touch },
+    world: {
+      hunter: { x: +live.hunter.x.toFixed(2), z: +live.hunter.z.toFixed(2), moving: live.moving },
+      nearZone: s.nearZone,
+      openPanel: s.panel,
+      cvOpen: s.cvOpen,
+      mapOpen: s.mapOpen,
+      inspectTarget: s.inspect,
+      zones: zones.map((z) => ({
+        zone: z.id,
+        name: z.name,
+        section: z.section,
+        description: z.description,
+        position: z.position,
+        discovered: s.visited.includes(z.id),
+      })),
     },
-    apps: appList.map((def) => ({
-      app: def.id,
-      title: def.title,
-      description: def.description,
-      open: windows.some((w) => w.id === def.id),
-    })),
-    windows: windows.map((w) => ({
-      app: w.id,
-      title: appList.find((def) => def.id === w.id)?.title ?? w.id,
-      open: true,
-      minimized: w.minimized,
-      focused: w.id === focusedId,
-      x: Math.round(w.x),
-      y: Math.round(w.y),
-      z: w.z,
-      width: Math.round(w.width),
-      height: w.height == null ? null : Math.round(w.height),
-    })),
-    inspectTarget,
+    visitor: {
+      level: levelFor(s.xp),
+      xp: s.xp,
+      questsCompleted: s.completed,
+      quests: visitorQuests.map((q) => ({ id: q.id, name: q.name, objective: q.objective, done: s.completed.includes(q.id) })),
+      shadowsRisen: s.risen,
+    },
     ...dossier,
   };
 }
 
-/** Imperative snapshot — for tool handlers and non-React callers. */
-export function getSystemSnapshot(): SystemSnapshot {
-  const { windows, stage, inspectTarget } = useOsStore.getState();
-  const { muted } = useSoundStore.getState();
-  const fullscreen =
-    typeof document !== "undefined" && document.fullscreenElement !== null;
-  return buildSnapshot(windows, stage, muted, fullscreen, inspectTarget);
-}
-
-/** Reactive snapshot — re-renders as the System changes (V5: feed to useAgentContext). */
+/** reactive variant for `useAgentContext` — re-renders on store changes */
 export function useSystemSnapshot(): SystemSnapshot {
-  const windows = useOsStore((s) => s.windows);
-  const stage = useOsStore((s) => s.stage);
-  const inspectTarget = useOsStore((s) => s.inspectTarget);
-  const muted = useSoundStore((s) => s.muted);
-  const fullscreen = useFullscreen();
-  return useMemo(
-    () => buildSnapshot(windows, stage, muted, fullscreen, inspectTarget),
-    [windows, stage, muted, fullscreen, inspectTarget],
-  );
+  useWorldStore();
+  return getSystemSnapshot();
 }

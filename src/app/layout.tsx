@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Rajdhani } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -24,7 +24,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "CODEONYM — Agentic Systems Developer",
   description:
-    "Bouarour Ayoub (codeonym) — AI Software Engineer specializing in agentic AI systems, multi-agent architectures, and LLM-driven workflows. Enter the System.",
+    "Bouarour Ayoub (codeonym) — AI Software Engineer specializing in agentic AI systems, multi-agent architectures, and LLM-driven workflows. Enter the Gate: an explorable Solo Leveling world where every project is a shadow waiting to ARISE.",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#05040b",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -37,7 +44,7 @@ export default function RootLayout({
       lang="en"
       className={`dark ${rajdhani.variable} ${michroma.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col scanlines">{children}</body>
+      <body className="min-h-full">{children}</body>
     </html>
   );
 }

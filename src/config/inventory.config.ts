@@ -18,7 +18,7 @@ import type { InventoryCategory, InventoryItem } from "./types";
  * The Player's possessions — actual items, not skills (those live
  * in skills.config). rarity drives the tile glow: legendary (gold)
  * > epic (arcane purple) > rare (system blue) > common. Clicking
- * an item opens its lore in the INFO window; items with `unlocks`
+ * an item opens its lore in the INSPECT card; items with `unlocks`
  * or `link` can be USE-d from there.
  */
 export const inventoryCategories: InventoryCategory[] = [
@@ -57,9 +57,9 @@ export const inventoryItems: InventoryItem[] = [
     category: "artifacts",
     rarity: "rare",
     meta: "SINGLE-TARGET · INFINITE CHARGES",
-    lore: "Carries a voice across any distance. USE it to open the NETWORK and call the Player to your party.",
+    lore: "Carries a voice across any distance. USE it to open the Shadow Gate and call the Player to your party.",
     tags: ["contact", "party"],
-    unlocks: "network",
+    unlocks: "gate",
   },
   {
     id: "gate-key",
