@@ -2,7 +2,7 @@ import type { Player } from "./types";
 
 /**
  * ── PLAYER RECORD ─────────────────────────────────────────────
- * Identity shown in STATUS, the avatar stage, the top bar and SUMMON.
+ * Identity shown at the Awakening Circle, the title screen and the Gate.
  * Stat values are 0–100; stat icons/colors map by `code` in stat-bar.tsx.
  */
 export const player: Player = {

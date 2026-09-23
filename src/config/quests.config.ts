@@ -5,7 +5,7 @@ import type { Quest } from "./types";
  * main quests = the Player's engagements (the OpenSNZ questline);
  * side quests = academic and personal projects.
  * rank: "S" | "A" | "B" (drives glow color), status: "cleared" | "ongoing".
- * `rewards` are the tech-stack badges shown in the INFO window.
+ * `rewards` are the tech-stack badges revealed once the quest has risen.
  */
 export const quests: Quest[] = [
   {

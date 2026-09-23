@@ -1,5 +1,4 @@
 import type { LucideIcon } from "lucide-react";
-import type { AppId } from "./apps.config";
 
 export type QuestRank = "S" | "A" | "B";
 export type QuestStatus = "cleared" | "ongoing";
@@ -21,7 +20,7 @@ export interface PlayerLinks {
   email: string;
 }
 
-/** honorific earned through deeds — shown as gold chips in STATUS */
+/** honorific earned through deeds — shown as gold cards at the Awakening Circle */
 export interface PlayerTitle {
   id: string;
   name: string;
@@ -90,12 +89,12 @@ export interface SkillDetail {
   rarity: Rarity;
   /** 0–100 mastery, drives the gauge and grade */
   mastery: number;
-  /** flavor description shown in the INFO window */
+  /** flavor description shown on the inspect card */
   lore: string;
   tags?: string[];
 }
 
-/** what the singleton INFO window is currently showing */
+/** what the inspect card is currently showing */
 export interface InspectTarget {
   kind: "skill" | "item" | "quest";
   id: string;
@@ -132,11 +131,11 @@ export interface InventoryItem {
   rarity: Rarity;
   /** provenance line (issuer · period) shown under the item name */
   meta?: string;
-  /** flavor description shown in the INFO window */
+  /** flavor description shown on the inspect card */
   lore: string;
   tags?: string[];
-  /** USE-ing this item opens the given System window (e.g. the CV) */
-  unlocks?: AppId;
+  /** USE-ing this item opens a destination: a zone panel or the CV */
+  unlocks?: Destination;
   /** USE-ing this item opens an external destination */
   link?: string;
 }
@@ -158,38 +157,14 @@ export interface AmbientEvent {
 }
 
 export interface SystemConfig {
-  /** shown in the dock footer */
+  /** release number, surfaced to agents in the snapshot */
   version: string;
-  /** flavor XP % toward next level, 0–100 */
-  xpProgress: number;
-  /** HP/SP-style gauges (status window + top bar) */
+  /** HP/SP-style gauges shown at the Awakening Circle */
   vitals: Vital[];
-  boot: {
-    lines: string[];
-    notification: {
-      heading: string;
-      body: string;
-      question: string;
-      name: string;
-      accept: string;
-      decline: string;
-      /** shown after a DECLINE attempt — the System does not take no */
-      declineRejected: string;
-    };
-    skipLabel: string;
-  };
-  /** rotating status messages in the top bar */
-  ticker: string[];
-  /** ambient notification pool — one fires every eventIntervalMs ± jitter */
+  /** ambient System notifications — one surfaces every eventIntervalMs ± jitter */
   ambientEvents: AmbientEvent[];
   /** average ms between ambient notifications */
   eventIntervalMs: number;
-  /** synthetic lines for the SYSTEM LOG stream widget */
-  logLines: string[];
-  /** avatar hologram caption */
-  avatarCaption: string;
-  dockFooter: string;
-  unsupported: SystemScreenCopy;
   runtimeError: SystemScreenCopy & { retry: string };
   notFound: SystemScreenCopy & { cta: string };
 }
@@ -201,4 +176,47 @@ export interface SystemScreenCopy {
   title: string;
   body: string;
   footer: string;
+}
+
+/* ─────────────────────────── V5 · THE WORLD ─────────────────────────── */
+
+/** every explorable zone on the island — each one opens its own panel */
+export type ZoneId =
+  | "awakening"
+  | "guild"
+  | "crypt"
+  | "armory"
+  | "treasury"
+  | "gate";
+
+/** where a USE / link / agent command can send the visitor */
+export type Destination = ZoneId | "cv";
+
+export interface ZoneDef {
+  id: ZoneId;
+  /** landmark name shown on markers, map and HUD */
+  name: string;
+  /** what the panel holds, in plain words (e.g. "Status & Profile") */
+  section: string;
+  /** one-line flavor under the name on the zone banner */
+  epithet: string;
+  icon: LucideIcon;
+  tone: Tone;
+  /** world position of the landmark center, [x, z] */
+  position: [number, number];
+  /** walk within this radius to get the interaction prompt */
+  radius: number;
+  /** verb on the interaction prompt: "[E] <verb> <name>" */
+  verb: string;
+  /** agent-facing routing hint (exposed through src/agent) */
+  description: string;
+}
+
+/** visitor-side objectives — completing them levels the visitor up */
+export interface VisitorQuest {
+  id: string;
+  name: string;
+  /** objective line under the name */
+  objective: string;
+  xp: number;
 }

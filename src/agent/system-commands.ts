@@ -1,418 +1,185 @@
-import type { AppId } from "@/config/apps.config";
-import { appIds, apps, isAppId } from "@/config/apps.config";
 import { findItem, inventoryItems } from "@/config/inventory.config";
 import { quests } from "@/config/quests.config";
 import { findSkill, skills } from "@/config/skills.config";
-import {
-  enterFullscreen,
-  exitFullscreen,
-} from "@/hooks/use-fullscreen";
-import type { ArrangeLayout } from "@/store/os-store";
-import { useOsStore } from "@/store/os-store";
-import { useSoundStore } from "@/store/sound-store";
+import type { ZoneId } from "@/config/types";
+import { isZoneId, zoneById, zoneIds } from "@/config/world.config";
+import { levelFor, useWorldStore, type Quality } from "@/store/world-store";
 
 /**
  * ── AGENT BRIDGE · WRITE SIDE ─────────────────────────────────
- * Every way an AI agent may drive the System, as a flat registry
- * of commands: name, model-facing description, JSON-Schema
- * parameters and a handler that returns a human-readable result
- * (the tool result the model reasons about).
+ * Every way an AI agent may drive the world, as a flat registry:
+ * name, model-facing description, JSON-Schema parameters and a
+ * handler returning a human-readable tool result.
  *
- * The registry is framework-neutral by design:
- *  - LangChain / LangGraph tools accept JSON Schema directly.
- *  - CopilotKit v2 `useFrontendTool` wants zod — V5 maps each
- *    entry with a one-line schema adapter, one hook call per
- *    command, no changes here.
- * New apps need zero work: commands take app ids from the
- * registry in apps.config, so adding an app there extends every
- * command automatically.
+ * Framework-neutral by design: LangChain tools take JSON Schema
+ * directly; CopilotKit v2 `useFrontendTool` needs one zod adapter
+ * per entry. New zones need zero work — commands read zone ids from
+ * world.config.
  */
 
 export interface SystemCommand {
   name: string;
   description: string;
-  /** JSON Schema (draft-07 subset) for the arguments object */
   parameters: {
     type: "object";
     properties: Record<string, unknown>;
     required?: string[];
     additionalProperties: false;
   };
-  /** executes against the stores; returns the tool result for the model */
   handler: (args: Record<string, unknown>) => string;
 }
 
-const APP_ENUM = {
+const ZONE_ENUM = {
   type: "string",
-  enum: appIds,
-  description: "Which System app the command targets.",
+  enum: zoneIds,
+  description:
+    "Zone id: awakening (status/profile), guild (experience/education), crypt (projects), armory (skills), treasury (inventory/CV), gate (contact).",
 } as const;
 
-const badApp = (value: unknown) =>
-  `Unknown app "${String(value)}". Valid apps: ${appIds.join(", ")}.`;
-
-function requireApp(args: Record<string, unknown>): AppId | null {
-  const value = args.app;
-  return typeof value === "string" && isAppId(value) ? value : null;
-}
-
-function requireApps(value: unknown): AppId[] | null {
-  if (!Array.isArray(value)) return null;
-  const ids = value.filter(
-    (v): v is AppId => typeof v === "string" && isAppId(v),
-  );
-  return ids.length > 0 ? ids : null;
-}
-
-const num = (value: unknown): number | undefined =>
-  typeof value === "number" && Number.isFinite(value) ? value : undefined;
-
-function describeWindows(): string {
-  const { windows } = useOsStore.getState();
-  if (windows.length === 0) return "No windows are open.";
-  return (
-    "Open windows: " +
-    windows
-      .map(
-        (w) =>
-          `${apps[w.id].title}${w.minimized ? " (minimized)" : ""} at (${Math.round(w.x)}, ${Math.round(w.y)}) ${Math.round(w.width)}px wide`,
-      )
-      .join("; ") +
-    "."
-  );
-}
+const store = () => useWorldStore.getState();
+const badZone = (v: unknown) => `Unknown zone "${String(v)}". Valid zones: ${zoneIds.join(", ")}.`;
+const zoneArg = (args: Record<string, unknown>): ZoneId | null =>
+  typeof args.zone === "string" && isZoneId(args.zone) ? args.zone : null;
 
 export const systemCommands: SystemCommand[] = [
   {
-    name: "open_app",
+    name: "open_zone",
     description:
-      "Open a System app window (or restore and focus it if it is already open).",
-    parameters: {
-      type: "object",
-      properties: { app: APP_ENUM },
-      required: ["app"],
-      additionalProperties: false,
-    },
+      "Show a section of the portfolio: the Hunter fast-travels to the zone and its panel opens, with the camera framing the landmark.",
+    parameters: { type: "object", properties: { zone: ZONE_ENUM }, required: ["zone"], additionalProperties: false },
     handler: (args) => {
-      const app = requireApp(args);
-      if (!app) return badApp(args.app);
-      useOsStore.getState().open(app);
-      return `${apps[app].title} is now open and focused. ${describeWindows()}`;
+      const zone = zoneArg(args);
+      if (!zone) return badZone(args.zone);
+      store().travelTo(zone);
+      // let the warp land before the panel frames the landmark
+      window.setTimeout(() => store().openPanel(zone), 450);
+      return `Opened ${zoneById[zone].name} (${zoneById[zone].section}).`;
     },
   },
   {
-    name: "close_app",
-    description: "Close a System app window.",
-    parameters: {
-      type: "object",
-      properties: { app: APP_ENUM },
-      required: ["app"],
-      additionalProperties: false,
-    },
+    name: "walk_to_zone",
+    description: "Make the Hunter walk (not teleport) to a zone; its panel opens on arrival.",
+    parameters: { type: "object", properties: { zone: ZONE_ENUM }, required: ["zone"], additionalProperties: false },
     handler: (args) => {
-      const app = requireApp(args);
-      if (!app) return badApp(args.app);
-      useOsStore.getState().close(app);
-      return `${apps[app].title} is closed. ${describeWindows()}`;
+      const zone = zoneArg(args);
+      if (!zone) return badZone(args.zone);
+      store().goTo(zone);
+      return `The Hunter is walking to ${zoneById[zone].name}.`;
     },
   },
   {
-    name: "close_all_apps",
-    description: "Close every open window, leaving the stage empty.",
-    parameters: {
-      type: "object",
-      properties: {},
-      additionalProperties: false,
-    },
+    name: "close_panel",
+    description: "Close the open zone panel and any inspect card, returning the camera to the Hunter.",
+    parameters: { type: "object", properties: {}, additionalProperties: false },
     handler: () => {
-      useOsStore.getState().closeAll();
-      return "All windows are closed; the stage is empty.";
-    },
-  },
-  {
-    name: "focus_app",
-    description:
-      "Bring an open window to the front without moving or resizing it.",
-    parameters: {
-      type: "object",
-      properties: { app: APP_ENUM },
-      required: ["app"],
-      additionalProperties: false,
-    },
-    handler: (args) => {
-      const app = requireApp(args);
-      if (!app) return badApp(args.app);
-      useOsStore.getState().focus(app);
-      return `${apps[app].title} is focused (frontmost).`;
-    },
-  },
-  {
-    name: "minimize_app",
-    description: "Minimize a window to the dock (it stays open).",
-    parameters: {
-      type: "object",
-      properties: { app: APP_ENUM },
-      required: ["app"],
-      additionalProperties: false,
-    },
-    handler: (args) => {
-      const app = requireApp(args);
-      if (!app) return badApp(args.app);
-      useOsStore.getState().minimize(app);
-      return `${apps[app].title} is minimized. ${describeWindows()}`;
-    },
-  },
-  {
-    name: "restore_app",
-    description: "Restore a minimized window and bring it to the front.",
-    parameters: {
-      type: "object",
-      properties: { app: APP_ENUM },
-      required: ["app"],
-      additionalProperties: false,
-    },
-    handler: (args) => {
-      const app = requireApp(args);
-      if (!app) return badApp(args.app);
-      useOsStore.getState().restore(app);
-      return `${apps[app].title} is restored and focused.`;
-    },
-  },
-  {
-    name: "minimize_other_apps",
-    description:
-      "Minimize every open window except the listed ones — 'collapse everything else'.",
-    parameters: {
-      type: "object",
-      properties: {
-        keep: {
-          type: "array",
-          items: APP_ENUM,
-          description: "Apps whose windows stay visible.",
-        },
-      },
-      required: ["keep"],
-      additionalProperties: false,
-    },
-    handler: (args) => {
-      const keep = requireApps(args.keep);
-      if (!keep) return badApp(args.keep);
-      useOsStore.getState().minimizeOthers(keep);
-      return `Everything except ${keep.map((id) => apps[id].title).join(" and ")} is minimized.`;
-    },
-  },
-  {
-    name: "restore_all_apps",
-    description: "Restore every minimized window.",
-    parameters: {
-      type: "object",
-      properties: {},
-      additionalProperties: false,
-    },
-    handler: () => {
-      useOsStore.getState().restoreAll();
-      return `All windows are visible again. ${describeWindows()}`;
-    },
-  },
-  {
-    name: "move_window",
-    description:
-      "Move a window to stage coordinates (px from the stage's top-left). Positions are clamped so windows stay reachable.",
-    parameters: {
-      type: "object",
-      properties: {
-        app: APP_ENUM,
-        x: { type: "number", description: "Left edge in px." },
-        y: { type: "number", description: "Top edge in px." },
-      },
-      required: ["app", "x", "y"],
-      additionalProperties: false,
-    },
-    handler: (args) => {
-      const app = requireApp(args);
-      const x = num(args.x);
-      const y = num(args.y);
-      if (!app) return badApp(args.app);
-      if (x === undefined || y === undefined)
-        return "Both x and y must be finite numbers.";
-      useOsStore.getState().move(app, x, y);
-      const win = useOsStore.getState().windows.find((w) => w.id === app);
-      if (!win) return `${apps[app].title} is not open — open it first.`;
-      return `${apps[app].title} moved to (${Math.round(win.x)}, ${Math.round(win.y)}).`;
-    },
-  },
-  {
-    name: "resize_window",
-    description:
-      "Resize a window's width and/or content height in px (clamped to sane bounds). Set fitContent to let the height follow the content again.",
-    parameters: {
-      type: "object",
-      properties: {
-        app: APP_ENUM,
-        width: { type: "number", description: "Frame width in px." },
-        height: { type: "number", description: "Content height in px." },
-        fitContent: {
-          type: "boolean",
-          description: "Reset height so the window sizes to its content.",
-        },
-      },
-      required: ["app"],
-      additionalProperties: false,
-    },
-    handler: (args) => {
-      const app = requireApp(args);
-      if (!app) return badApp(args.app);
-      const width = num(args.width);
-      const height = args.fitContent === true ? null : num(args.height);
-      if (width === undefined && height === undefined)
-        return "Provide width, height, or fitContent.";
-      useOsStore.getState().resize(app, { width, height });
-      const win = useOsStore.getState().windows.find((w) => w.id === app);
-      if (!win) return `${apps[app].title} is not open — open it first.`;
-      return `${apps[app].title} is now ${Math.round(win.width)}px wide${
-        win.height == null
-          ? " with content-fit height"
-          : ` and ${Math.round(win.height)}px tall`
-      }.`;
-    },
-  },
-  {
-    name: "arrange_windows",
-    description:
-      "Lay out the given apps on the stage, opening them if needed. Layout 'row' tiles them side by side, 'stack' piles them centered, 'cascade' staggers them. exclusive=true minimizes everything else.",
-    parameters: {
-      type: "object",
-      properties: {
-        apps: {
-          type: "array",
-          items: APP_ENUM,
-          minItems: 1,
-          description: "Apps to arrange, left to right.",
-        },
-        layout: {
-          type: "string",
-          enum: ["row", "stack", "cascade"],
-          description: "Tiling strategy (default row).",
-        },
-        exclusive: {
-          type: "boolean",
-          description: "Minimize every window not listed (default false).",
-        },
-      },
-      required: ["apps"],
-      additionalProperties: false,
-    },
-    handler: (args) => {
-      const ids = requireApps(args.apps);
-      if (!ids) return badApp(args.apps);
-      const layout: ArrangeLayout =
-        args.layout === "stack" || args.layout === "cascade"
-          ? args.layout
-          : "row";
-      useOsStore.getState().arrange(ids, layout, {
-        exclusive: args.exclusive === true,
-      });
-      return `Arranged ${ids.map((id) => apps[id].title).join(", ")} in a ${layout}${
-        args.exclusive === true ? ", everything else minimized" : ""
-      }. ${describeWindows()}`;
+      store().closePanel();
+      return "Panel closed.";
     },
   },
   {
     name: "inspect_entity",
-    description:
-      "Open the INFO window on a specific skill, inventory item or quest — the game-style detail popup. Entity ids are listed in the system snapshot (skills, inventory.items, quests).",
+    description: "Open the detail card for a skill, inventory item, or quest (project) by id.",
     parameters: {
       type: "object",
       properties: {
-        kind: {
-          type: "string",
-          enum: ["skill", "item", "quest"],
-          description: "What kind of entity to inspect.",
-        },
-        id: {
-          type: "string",
-          description: "The entity id from the snapshot.",
-        },
+        kind: { type: "string", enum: ["skill", "item", "quest"] },
+        id: { type: "string", description: "Entity id from the snapshot (skills.skills, inventory.items, quests)." },
       },
       required: ["kind", "id"],
       additionalProperties: false,
     },
     handler: (args) => {
-      const { kind, id } = args;
-      if (kind !== "skill" && kind !== "item" && kind !== "quest")
-        return 'kind must be "skill", "item" or "quest".';
-      if (typeof id !== "string") return "id must be a string.";
-      const found =
-        kind === "skill"
-          ? findSkill(id)
-          : kind === "item"
-            ? findItem(id)
-            : quests.find((q) => q.id === id);
-      if (!found) {
-        const valid =
-          kind === "skill"
-            ? skills.map((s) => s.id)
-            : kind === "item"
-              ? inventoryItems.map((i) => i.id)
-              : quests.map((q) => q.id);
-        return `Unknown ${kind} "${id}". Valid ${kind} ids: ${valid.join(", ")}.`;
+      const kind = args.kind;
+      const id = String(args.id ?? "");
+      const exists =
+        kind === "skill" ? !!findSkill(id) : kind === "item" ? !!findItem(id) : kind === "quest" ? quests.some((q) => q.id === id) : false;
+      if (!exists) {
+        const pool = kind === "skill" ? skills : kind === "item" ? inventoryItems : quests;
+        return `No ${String(kind)} "${id}". Try one of: ${pool.map((e) => e.id).slice(0, 12).join(", ")}…`;
       }
-      useOsStore.getState().inspect({ kind, id });
-      return `INFO window now shows the ${kind} "${found.name}". ${describeWindows()}`;
+      store().setInspect({ kind: kind as "skill" | "item" | "quest", id });
+      return `Inspecting ${String(kind)} "${id}".`;
+    },
+  },
+  {
+    name: "arise",
+    description:
+      "Command a fallen quest (project) in the Shadow Crypt to ARISE — it plays the extraction and joins the Hunter's shadow legion. Omit id to raise the next fallen one.",
+    parameters: {
+      type: "object",
+      properties: { id: { type: "string", enum: quests.map((q) => q.id) } },
+      additionalProperties: false,
+    },
+    handler: (args) => {
+      const s = store();
+      if (s.rising) return `Another shadow is mid-extraction (${s.rising}); try again in a few seconds.`;
+      const id = typeof args.id === "string" ? args.id : quests.find((q) => !s.risen.includes(q.id))?.id;
+      if (!id) return "Every quest has already risen.";
+      if (s.risen.includes(id)) return `"${id}" has already risen.`;
+      s.arise(id);
+      return `ARISE — "${id}" is being extracted.`;
+    },
+  },
+  {
+    name: "open_cv",
+    description: "Project the Hunter's License: open the full CV (PDF) viewer with a download option.",
+    parameters: { type: "object", properties: {}, additionalProperties: false },
+    handler: () => {
+      store().setCvOpen(true);
+      return "CV viewer open.";
+    },
+  },
+  {
+    name: "toggle_map",
+    description: "Open or close the world map (fast-travel overlay).",
+    parameters: { type: "object", properties: { open: { type: "boolean" } }, required: ["open"], additionalProperties: false },
+    handler: (args) => {
+      store().setMapOpen(!!args.open);
+      return `World map ${args.open ? "open" : "closed"}.`;
     },
   },
   {
     name: "set_sound",
-    description: "Mute or unmute the System's interface sounds.",
-    parameters: {
-      type: "object",
-      properties: {
-        muted: { type: "boolean", description: "true = silence the System." },
-      },
-      required: ["muted"],
-      additionalProperties: false,
-    },
+    description: "Mute or unmute all world audio.",
+    parameters: { type: "object", properties: { muted: { type: "boolean" } }, required: ["muted"], additionalProperties: false },
     handler: (args) => {
-      if (typeof args.muted !== "boolean") return "muted must be a boolean.";
-      useSoundStore.getState().setMuted(args.muted);
-      return args.muted ? "System sounds muted." : "System sounds enabled.";
+      if (store().muted !== !!args.muted) store().toggleMuted();
+      return `Sound ${args.muted ? "muted" : "on"}.`;
     },
   },
   {
-    name: "set_fullscreen",
-    description:
-      "Enter or leave immersion (fullscreen) mode. Browsers may refuse outside a user gesture — the command is best-effort.",
+    name: "set_quality",
+    description: "Change graphics quality: high (shadows + bloom), medium (bloom), low (no post-processing).",
     parameters: {
       type: "object",
-      properties: {
-        enabled: { type: "boolean", description: "true = fullscreen." },
-      },
-      required: ["enabled"],
+      properties: { quality: { type: "string", enum: ["high", "medium", "low"] } },
+      required: ["quality"],
       additionalProperties: false,
     },
     handler: (args) => {
-      if (typeof args.enabled !== "boolean")
-        return "enabled must be a boolean.";
-      if (args.enabled) enterFullscreen();
-      else exitFullscreen();
-      return args.enabled
-        ? "Requested immersion mode (the browser may require a user gesture)."
-        : "Left immersion mode.";
+      const q = args.quality as Quality;
+      if (!["high", "medium", "low"].includes(q)) return `Unknown quality "${String(q)}".`;
+      store().setQuality(q);
+      return `Graphics quality set to ${q}.`;
+    },
+  },
+  {
+    name: "visitor_progress",
+    description: "Report the visitor's level, XP, discovered zones and completed System quests.",
+    parameters: { type: "object", properties: {}, additionalProperties: false },
+    handler: () => {
+      const s = store();
+      return `Visitor LV.${levelFor(s.xp)} (${s.xp} XP). Zones discovered: ${s.visited.join(", ") || "none"}. Quests done: ${s.completed.join(", ") || "none"}. Shadows risen: ${s.risen.length}/${quests.length}.`;
     },
   },
 ];
 
-const commandsByName = new Map(systemCommands.map((c) => [c.name, c]));
-
-/** Single dispatch entry point — voice pipelines and V5 tool adapters route here. */
-export function executeSystemCommand(
-  name: string,
-  args: Record<string, unknown> = {},
-): string {
-  const command = commandsByName.get(name);
-  if (!command)
-    return `Unknown command "${name}". Available: ${systemCommands
-      .map((c) => c.name)
-      .join(", ")}.`;
-  return command.handler(args);
+export function executeSystemCommand(name: string, args: Record<string, unknown> = {}): string {
+  const cmd = systemCommands.find((c) => c.name === name);
+  if (!cmd) return `Unknown command "${name}". Available: ${systemCommands.map((c) => c.name).join(", ")}.`;
+  try {
+    return cmd.handler(args);
+  } catch (err) {
+    return `Command "${name}" failed: ${err instanceof Error ? err.message : String(err)}`;
+  }
 }

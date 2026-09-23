@@ -1,14 +1,14 @@
-import { BootSequence } from "@/components/system/boot-sequence";
-import { DeviceGate } from "@/components/os/device-gate";
-import { SystemOS } from "@/components/os/system-os";
-import { SystemScene } from "@/components/three/system-scene";
+import { LoadingScreen, TitleScreen } from "@/components/hud/intro-screens";
+import { WorldHud } from "@/components/hud/world-hud";
+import { WorldCanvas } from "@/components/world/world-canvas";
 
 export default function Home() {
   return (
-    <DeviceGate>
-      <BootSequence />
-      <SystemScene />
-      <SystemOS />
-    </DeviceGate>
+    <main className="grain relative h-dvh w-full overflow-hidden">
+      <WorldCanvas />
+      <WorldHud />
+      <TitleScreen />
+      <LoadingScreen />
+    </main>
   );
 }
