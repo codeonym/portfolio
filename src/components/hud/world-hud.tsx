@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import dynamic from "next/dynamic";
 import { AgentDevBridge } from "@/agent/dev-bridge";
 import { AnimatePresence, motion } from "motion/react";
 import { systemConfig } from "@/config/system.config";
@@ -30,6 +31,9 @@ import {
   WorldMap,
 } from "./hud-widgets";
 import { Joystick, KeyboardInput } from "./input";
+
+/** THE SYSTEM (CopilotKit + agent dialogue) — its own chunk, fetched after the world is up */
+const SystemLink = dynamic(() => import("@/components/agent/system-link"), { ssr: false });
 
 const PANELS = {
   awakening: StatusPanel,
@@ -103,6 +107,9 @@ export function WorldHud() {
   const touch = useWorldStore((s) => s.touch);
   const setTouch = useWorldStore((s) => s.setTouch);
   const panel = useWorldStore((s) => s.panel);
+  const dialogue = useWorldStore((s) => s.dialogueOpen);
+  // on touch the dialogue is a bottom sheet: it owns the lower screen
+  const sheet = touch && dialogue && !panel;
 
   useEffect(() => {
     void useWorldStore.persist.rehydrate();
@@ -131,9 +138,9 @@ export function WorldHud() {
             transition={{ duration: 1, delay: 0.6 }}
           >
             {/* top-left: who you are in this world */}
-            <div className={cn("absolute top-3 left-3 flex flex-col gap-2 transition-opacity sm:top-4 sm:left-4", touch && panel && "opacity-0")}>
+            <div className={cn("absolute top-3 left-3 flex flex-col gap-2 transition-opacity sm:top-4 sm:left-4", ((touch && (panel || dialogue)) || (!touch && dialogue)) && "opacity-0")}>
               <VisitorCard />
-              {!touch && !panel && <QuestTracker />}
+              {!touch && !panel && !dialogue && <QuestTracker />}
             </div>
 
             {/* top-right: controls + minimap */}
@@ -148,13 +155,13 @@ export function WorldHud() {
             </div>
 
             {/* bottom: interaction prompt + zone bar */}
-            <div className={cn("absolute inset-x-0 bottom-3 flex flex-col items-center gap-3 px-2 sm:bottom-5", panel && "opacity-0 [&_*]:!pointer-events-none")}>
+            <div className={cn("absolute inset-x-0 bottom-3 flex flex-col items-center gap-3 px-2 sm:bottom-5", (panel || sheet) && "opacity-0 [&_*]:!pointer-events-none")}>
               <InteractPrompt />
               <ZoneBar />
               {!touch && <p className="font-display text-[8px] tracking-[0.2em] text-muted-foreground/70">{world.hud.controlsDesktop}</p>}
             </div>
 
-            {touch && !panel && (
+            {touch && !panel && !sheet && (
               <div className="absolute bottom-24 left-4">
                 <Joystick />
               </div>
@@ -163,6 +170,7 @@ export function WorldHud() {
         )}
       </AnimatePresence>
 
+      {phase === "world" && <SystemLink />}
       <PanelShell zones={PANELS} />
       <InspectCard />
       <CvModal />

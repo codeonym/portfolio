@@ -38,6 +38,8 @@ export const live = {
   input: { x: 0, z: 0, run: false },
   /** camera yaw (radians) — movement input is relative to it */
   cameraYaw: 0,
+  /** THE SYSTEM is generating — the hologram reads this every frame */
+  agentBusy: false,
 };
 
 interface WorldState {
@@ -57,6 +59,8 @@ interface WorldState {
   panel: ZoneId | null;
   cvOpen: boolean;
   mapOpen: boolean;
+  /** the dialogue window with THE SYSTEM (the agent) */
+  dialogueOpen: boolean;
   inspect: InspectTarget | null;
   /** quest id currently mid-ARISE (animation playing) */
   rising: string | null;
@@ -87,6 +91,7 @@ interface WorldState {
   travelTo: (zone: ZoneId) => void;
   setMapOpen: (open: boolean) => void;
   setCvOpen: (open: boolean) => void;
+  setDialogueOpen: (open: boolean) => void;
   setInspect: (target: InspectTarget | null) => void;
   arise: (questId: string) => void;
   finishRising: () => void;
@@ -126,6 +131,7 @@ export const useWorldStore = create<WorldState>()(
       panel: null,
       cvOpen: false,
       mapOpen: false,
+      dialogueOpen: false,
       inspect: null,
       rising: null,
       warp: { to: world.spawn, n: 0 },
@@ -192,6 +198,7 @@ export const useWorldStore = create<WorldState>()(
         set({ cvOpen });
         if (cvOpen) get().completeQuest("license");
       },
+      setDialogueOpen: (dialogueOpen) => set(dialogueOpen ? { dialogueOpen, mapOpen: false } : { dialogueOpen }),
       setInspect: (inspect) => {
         set({ inspect });
         if (inspect?.kind === "item" && inspect.id === "hunter-license") {

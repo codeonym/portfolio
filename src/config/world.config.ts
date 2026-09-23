@@ -170,13 +170,14 @@ export const world = {
       "Every skeleton in the Shadow Crypt is a project. Command it to ARISE.",
       "Risen shadows follow the Hunter everywhere.",
       "Press M to open the world map and fast-travel to any zone.",
+      "The hologram at the center is THE SYSTEM. Press T and ask it anything — it can open any window for you.",
     ],
   },
 
   title: {
     eyebrow: "[ A NEW PLAYER HAS BEEN DETECTED ]",
     name: "CODEONYM",
-    role: "AI Software Engineer · Agentic Systems",
+    role: "Software Engineer · AI Agent Engineer",
     notice:
       "You have acquired the qualifications to enter the domain of the Player. Will you accept?",
     enter: "ARISE",
@@ -194,7 +195,7 @@ export const world = {
     tapPrompt: "TAP",
     arise: "ARISE",
     ariseAll: "ARISE — ALL",
-    controlsDesktop: "CLICK · WASD move — SHIFT run — DRAG look — M map — E interact",
+    controlsDesktop: "CLICK · WASD move — SHIFT run — DRAG look — M map — E interact — T speak",
     controlsTouch: "TAP to move — STICK to steer — TAP a marker to interact",
   },
 
@@ -206,6 +207,28 @@ export const world = {
     ariseBody: "has joined the Shadow Legion.",
     allComplete:
       "Every record unlocked. The Player would be glad to hear from you — the Shadow Gate is open.",
+  },
+
+  /** THE SYSTEM — the agent that lives in the hologram at the Awakening Circle */
+  agent: {
+    name: "THE SYSTEM",
+    epithet: "the entity that chose the Player",
+    /** the HUD prompt shown when the Hunter stands at the hologram */
+    promptVerb: "Speak with",
+    promptKey: "T",
+    greeting:
+      "[ You have been noticed, Hunter. ] Ask me anything about the Player — or tell me what to show you. I can open any System window, raise the fallen, and bend this island to your request.",
+    placeholder: "Speak to the System…",
+    thinking: "The System is processing…",
+    suggestions: [
+      "Show me the status window",
+      "Who is the Player?",
+      "What has he built with agents?",
+      "Raise a shadow for me",
+      "How do I contact him?",
+    ],
+    offline: "The System is unreachable. The link to the Gate will return shortly.",
+    footer: "AI · LangChain agent via CopilotKit — answers can be wrong; the CV is the source of truth.",
   },
 
   credits:
