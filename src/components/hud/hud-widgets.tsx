@@ -15,7 +15,7 @@ import { player } from "@/config/player.config";
 import { quests } from "@/config/quests.config";
 import type { ZoneId } from "@/config/types";
 import { visitorQuests, world, xpPerLevel, zoneById, zones } from "@/config/world.config";
-import { duckMusic, play } from "@/lib/audio";
+import { chime, duckMusic, play } from "@/lib/audio";
 import { cn } from "@/lib/utils";
 import { toneColor } from "@/components/world/assets";
 import { levelFor, live, useWorldStore, type Quality } from "@/store/world-store";
@@ -99,10 +99,16 @@ export function QuestTracker() {
 export function Toasts() {
   const toasts = useWorldStore((s) => s.toasts);
   const dismiss = useWorldStore((s) => s.dismissToast);
+  const announced = useRef(0);
   useEffect(() => {
     if (!toasts.length) return;
     const last = toasts[toasts.length - 1];
-    play(last.heading === world.toasts.questComplete ? "confirm" : "system", { volume: 0.4 });
+    // sound only for a new prompt, not when an older one is dismissed
+    if (last.id > announced.current) {
+      announced.current = last.id;
+      if (last.heading === world.toasts.questComplete) play("confirm", { volume: 0.4 });
+      else chime();
+    }
     const id = window.setTimeout(() => dismiss(last.id), 5200);
     return () => window.clearTimeout(id);
   }, [toasts, dismiss]);

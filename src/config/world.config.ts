@@ -209,5 +209,5 @@ export const world = {
   },
 
   credits:
-    "Models: KayKit by Kay Lousberg (CC0) · HDRI & textures: Poly Haven (CC0) · Sounds: Kenney (CC0) · Music: “Dungeon Ambience” by yd (CC0)",
+    "Models: KayKit by Kay Lousberg (CC0) · HDRI & textures: Poly Haven (CC0) · Sounds: Kenney (CC0)",
 };

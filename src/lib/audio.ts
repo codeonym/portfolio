@@ -1,7 +1,8 @@
 import { useWorldStore } from "@/store/world-store";
 
 /**
- * World audio — CC0 samples (Kenney) + an ambient loop (OpenGameArt, CC0).
+ * World audio — CC0 samples (Kenney), the System notification chime and a
+ * suspense theme loop.
  * Buffers are fetched lazily on first use; everything fails silently,
  * audio is decoration and never load-bearing.
  */
@@ -17,7 +18,7 @@ const SOUNDS = {
   glitch: "/audio/glitch.mp3",
   portal: "/audio/portal.mp3",
   arise: "/audio/arise.mp3",
-  system: "/audio/system.mp3",
+  system: "/audio/notify.mp3",
   book: "/audio/book.mp3",
   coins: "/audio/coins.mp3",
   chest: "/audio/chest.mp3",
@@ -38,7 +39,12 @@ const VOLUME: Partial<Record<SoundId, number>> = {
   step3: 0.18,
   arise: 0.9,
   portal: 0.5,
+  system: 0.4,
 };
+
+/** the theme is mastered loud — keep it well under the effects */
+const MUSIC_LEVEL = 0.16;
+const MUSIC_DUCKED = 0.04;
 
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
@@ -92,6 +98,15 @@ export function play(id: SoundId, opts: { volume?: number; rate?: number } = {})
   });
 }
 
+/** the System chime — throttled so stacked prompts don't pile up the 3s sting */
+let lastChime = 0;
+export function chime(volume?: number) {
+  const now = performance.now();
+  if (now - lastChime < 2500) return;
+  lastChime = now;
+  play("system", { volume });
+}
+
 let stepIndex = 0;
 export function footstep() {
   const id = (["step0", "step1", "step2", "step3"] as const)[stepIndex++ % 4];
@@ -109,7 +124,7 @@ export function startMusic() {
   const ac = context();
   if (!ac || !master) return;
   if (!music) {
-    const el = new Audio("/audio/ambient.mp3");
+    const el = new Audio("/audio/theme.mp3");
     el.loop = true;
     el.crossOrigin = "anonymous";
     const node = ac.createMediaElementSource(el);
@@ -120,7 +135,7 @@ export function startMusic() {
   }
   void music.el.play().catch(() => {});
   music.gain.gain.cancelScheduledValues(ac.currentTime);
-  music.gain.gain.setTargetAtTime(0.32, ac.currentTime, 1.6);
+  music.gain.gain.setTargetAtTime(MUSIC_LEVEL, ac.currentTime, 1.6);
 }
 
 /** duck the music under big moments (ARISE, level up) */
@@ -128,6 +143,6 @@ export function duckMusic(seconds = 2.5) {
   if (!ctx || !music) return;
   const g = music.gain.gain;
   g.cancelScheduledValues(ctx.currentTime);
-  g.setTargetAtTime(0.08, ctx.currentTime, 0.1);
-  g.setTargetAtTime(0.32, ctx.currentTime + seconds, 0.8);
+  g.setTargetAtTime(MUSIC_DUCKED, ctx.currentTime, 0.1);
+  g.setTargetAtTime(MUSIC_LEVEL, ctx.currentTime + seconds, 0.8);
 }

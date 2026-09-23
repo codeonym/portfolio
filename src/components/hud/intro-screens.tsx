@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useProgress } from "@react-three/drei";
 import { player } from "@/config/player.config";
 import { world } from "@/config/world.config";
-import { play, preloadSounds, startMusic } from "@/lib/audio";
+import { chime, play, preloadSounds, startMusic } from "@/lib/audio";
 import { useWorldStore } from "@/store/world-store";
 
 /** rotating hexagram — the System's sigil, pure SVG */
@@ -110,7 +110,7 @@ export function TitleScreen() {
       preloadSounds();
       startMusic();
     }
-    play("system");
+    chime();
     setPhase("world");
     // small delay so the first toast lands after the camera swoop
     window.setTimeout(() => completeQuest("awaken"), 1600);

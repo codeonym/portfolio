@@ -1,7 +1,7 @@
 # World assets
 
-Everything the 3D world streams lives under `public/`. All of it is free —
-CC0 or authored here — and nothing needs attribution, though we credit anyway
+Everything the 3D world streams lives under `public/`. Nearly all of it is free —
+CC0 or authored here (the two owner-supplied audio files excepted) — and nothing needs attribution, though we credit anyway
 (`world.credits` in `src/config/world.config.ts`, shown at the Shadow Gate).
 
 | Path                                   | What                                              | Source · license                                                                                   |
@@ -14,7 +14,8 @@ CC0 or authored here — and nothing needs attribution, though we credit anyway
 | `public/env/night.hdr`                 | night sky (kloppenheim_02_puresky, 1k)            | [Poly Haven](https://polyhaven.com) · CC0                                                           |
 | `public/textures/stone/*`              | plateau floor (monastery_stone_floor, 1k)         | [Poly Haven](https://polyhaven.com) · CC0                                                           |
 | `public/audio/*` (sfx)                 | UI, footsteps, portal, ARISE                      | [Kenney](https://kenney.nl) interface / sci-fi / RPG packs · CC0                                    |
-| `public/audio/ambient.mp3`             | “Dungeon Ambience” by yd                          | [OpenGameArt](https://opengameart.org/content/dungeon-ambience) · CC0                               |
+| `public/audio/theme.mp3`               | suspense theme loop (“21-mood-suspense-01”)       | supplied by the owner — re-encoded 128 kbps                                                          |
+| `public/audio/notify.mp3`              | System notification chime                         | supplied by the owner (Solo Leveling System sound) — trimmed, re-encoded                             |
 
 ## Regenerating
 
