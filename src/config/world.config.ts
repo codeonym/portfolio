@@ -203,7 +203,7 @@ export const world = {
     tapPrompt: "TAP",
     arise: "ARISE",
     ariseAll: "ARISE — ALL",
-    controlsDesktop: "CLICK · WASD move — SHIFT run — DRAG look — M map — E interact — T speak",
+    controlsDesktop: "CLICK · WASD move — SHIFT run — DRAG look — M map — E interact — T speak — F fullscreen",
     controlsTouch: "TAP to move — STICK to steer — TAP a marker to interact",
   },
 

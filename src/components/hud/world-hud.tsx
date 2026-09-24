@@ -30,6 +30,7 @@ import {
   VisitorCard,
   WorldMap,
 } from "./hud-widgets";
+import { ImmersionTransition, useIdle, useImmersive } from "./immersion";
 import { Joystick, KeyboardInput } from "./input";
 
 /** THE SYSTEM (CopilotKit + agent dialogue) — its own chunk, fetched after the world is up */
@@ -110,6 +111,9 @@ export function WorldHud() {
   const dialogue = useWorldStore((s) => s.dialogueOpen);
   // on touch the dialogue is a bottom sheet: it owns the lower screen
   const sheet = touch && dialogue && !panel;
+  // immersive mode: the HUD recedes while the visitor just takes the temple in
+  const immersive = useImmersive();
+  const faded = useIdle(4500, immersive && phase === "world" && !panel && !dialogue);
 
   useEffect(() => {
     void useWorldStore.persist.rehydrate();
@@ -126,13 +130,17 @@ export function WorldHud() {
   return (
     <>
       <KeyboardInput />
+      <ImmersionTransition />
       <AgentDevBridge />
       <div className="letterbox" data-on={!!panel && !touch} />
       <AnimatePresence>
         {phase === "world" && (
           <motion.div
             key="hud"
-            className="pointer-events-none fixed inset-0 z-30"
+            className={cn(
+              "pointer-events-none fixed inset-0 z-30 [&>div]:transition-opacity [&>div]:duration-700",
+              faded && "[&>div]:opacity-15",
+            )}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.6 }}
@@ -158,7 +166,7 @@ export function WorldHud() {
             <div className={cn("absolute inset-x-0 bottom-3 flex flex-col items-center gap-3 px-2 sm:bottom-5", (panel || sheet) && "opacity-0 [&_*]:!pointer-events-none")}>
               <InteractPrompt />
               <ZoneBar />
-              {!touch && <p className="font-display text-[8px] tracking-[0.2em] text-muted-foreground/70">{world.hud.controlsDesktop}</p>}
+              {!touch && !immersive && <p className="font-display text-[8px] tracking-[0.2em] text-muted-foreground/70">{world.hud.controlsDesktop}</p>}
             </div>
 
             {touch && !panel && !sheet && (
