@@ -14,7 +14,7 @@ import { ChatOpenAI } from "@langchain/openai";
  *   3. the default below.
  */
 
-const OPENROUTER_URL = "https://openrouter.ai/api/v1";
+export const OPENROUTER_URL = "https://openrouter.ai/api/v1";
 export const DEFAULT_MODEL_ID = "openai/gpt-oss-120b";
 
 const EDGE_TTL_MS = 30_000;
@@ -49,22 +49,40 @@ export function hasModelKey(): boolean {
   return !!process.env.OPEN_ROUTER_API_KEY;
 }
 
-export function createChatModel(modelId: string) {
+/** attribution headers OpenRouter shows on its dashboard */
+function attribution() {
+  return {
+    "HTTP-Referer": process.env.SITE_URL ?? "https://portfolio.codeonym.work",
+    // header values must stay Latin-1 — no em dashes here
+    "X-Title": "codeonym - The System",
+  };
+}
+
+/** for the raw audio endpoints (no SDK) */
+export function openRouterHeaders(): Record<string, string> {
+  return { ...attribution(), authorization: `Bearer ${process.env.OPEN_ROUTER_API_KEY ?? ""}` };
+}
+
+export interface ChatModelOptions {
+  temperature?: number;
+  maxTokens?: number;
+  /** reasoning effort for models that think (the voice can't wait long) */
+  reasoningEffort?: "low" | "medium" | "high";
+}
+
+export function createChatModel(modelId: string, opts: ChatModelOptions = {}) {
   return new ChatOpenAI({
     model: modelId,
     apiKey: process.env.OPEN_ROUTER_API_KEY,
-    temperature: 0.55,
-    maxTokens: 1400,
+    temperature: opts.temperature ?? 0.55,
+    maxTokens: opts.maxTokens ?? 1400,
     streaming: true,
     // OpenRouter only implements Chat Completions
     useResponsesApi: false,
+    ...(opts.reasoningEffort ? { modelKwargs: { reasoning: { effort: opts.reasoningEffort } } } : {}),
     configuration: {
       baseURL: OPENROUTER_URL,
-      defaultHeaders: {
-        "HTTP-Referer": process.env.SITE_URL ?? "https://portfolio.codeonym.work",
-        // header values must stay Latin-1 — no em dashes here
-        "X-Title": "codeonym - The System",
-      },
+      defaultHeaders: attribution(),
     },
   });
 }

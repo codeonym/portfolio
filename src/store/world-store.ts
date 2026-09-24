@@ -41,6 +41,8 @@ export const live = {
   cameraYaw: 0,
   /** THE SYSTEM is generating — its wraith reads this every frame */
   agentBusy: false,
+  /** the voice link's pull on the wraith (1 = rest): it leans in while listening, pulses as it speaks */
+  voiceSurge: 1,
 };
 
 interface WorldState {

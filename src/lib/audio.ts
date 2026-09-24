@@ -146,3 +146,11 @@ export function duckMusic(seconds = 2.5) {
   g.setTargetAtTime(MUSIC_DUCKED, ctx.currentTime, 0.1);
   g.setTargetAtTime(MUSIC_LEVEL, ctx.currentTime + seconds, 0.8);
 }
+
+/** hold the music down while the System listens or speaks */
+export function holdMusicDuck(on: boolean) {
+  if (!ctx || !music) return;
+  const g = music.gain.gain;
+  g.cancelScheduledValues(ctx.currentTime);
+  g.setTargetAtTime(on ? MUSIC_DUCKED : MUSIC_LEVEL, ctx.currentTime, on ? 0.12 : 0.9);
+}

@@ -22,6 +22,7 @@ import { toneColor } from "@/components/world/assets";
 import { HALL_CENTER_Z, HALL_OUTLINE } from "@/components/world/layout";
 import { levelFor, live, useWorldStore, type Quality } from "@/store/world-store";
 import { ImmersionButton } from "./immersion";
+import { VoiceButton } from "@/components/agent/voice/voice-button";
 
 /* ── visitor card: the visitor's own level, XP and sync rate ── */
 export function VisitorCard() {
@@ -281,6 +282,7 @@ export function SystemControls() {
         <span className="hidden font-display text-[9px] tracking-[0.2em] sm:inline">SYSTEM</span>
         <span className="kbd hidden sm:inline-grid">{world.agent.promptKey}</span>
       </button>
+      <VoiceButton />
       <button type="button" aria-label="World map" data-active={mapOpen} onClick={() => { play("open"); setMapOpen(!mapOpen); }} className="hud-chip h-9 px-3">
         <MapIcon className="size-4" />
         <span className="kbd hidden sm:inline-grid">M</span>

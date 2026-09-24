@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ChevronUp, CornerDownLeft, Square, X } from "lucide-react";
+import { ChevronUp, CornerDownLeft, Mic, Square, X } from "lucide-react";
 import { useAgent, useCopilotKit, useRenderToolCall } from "@copilotkit/react-core/v2";
 import type { Message, ToolCall } from "@ag-ui/client";
 import { SYSTEM_AGENT_ID } from "@/agent/constants";
+import { parseVoiceTask } from "@/agent/voice/protocol";
 import { findItem } from "@/config/inventory.config";
 import { quests } from "@/config/quests.config";
 import { findSkill } from "@/config/skills.config";
@@ -97,6 +98,18 @@ function Thread({ messages, running }: { messages: Message[]; running: boolean }
     <>
       {visible.map((m) => {
         if (m.role === "user") {
+          // handed over by the voice System, not typed by the visitor
+          const task = parseVoiceTask(textOf(m));
+          if (task) {
+            return (
+              <div key={m.id} className="flex items-start gap-2 self-end font-display text-[9px] leading-relaxed tracking-[0.2em] text-arcane-hot/90">
+                <Mic className="mt-px size-3 shrink-0" />
+                <span>
+                  [ VOICE TASK #{task.n} ] <span className="font-sans text-xs tracking-normal text-foreground/80 normal-case">{task.task}</span>
+                </span>
+              </div>
+            );
+          }
           return (
             <div key={m.id} className="ml-8 self-end border-r-2 border-arcane/60 bg-arcane/10 px-3 py-2 text-sm text-foreground/95">
               {textOf(m)}
