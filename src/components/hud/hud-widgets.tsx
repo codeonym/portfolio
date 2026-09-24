@@ -200,7 +200,7 @@ export function InteractPrompt() {
   const openPanel = useWorldStore((s) => s.openPanel);
   const setDialogueOpen = useWorldStore((s) => s.setDialogueOpen);
   const zone = near ? zoneById[near] : null;
-  // the hologram above the Awakening Circle is THE SYSTEM itself
+  // the wraith above the Awakening Circle is THE SYSTEM itself
   const canSpeak = near === "awakening" && !dialogue;
   return (
     <div className="flex flex-wrap items-center justify-center gap-2">

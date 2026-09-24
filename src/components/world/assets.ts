@@ -11,16 +11,21 @@ import type { Tone } from "@/config/types";
 /** every streamed asset the world needs — preloaded behind the loading screen */
 export const ASSETS = {
   draco: "/draco/",
-  hunter: "/models/world/hunter.glb",
+  /** Sung Jin-Woo, the Player — the Hunter's clips retargeted onto his rig */
+  sung: "/models/world/sung.glb",
+  /** Igris — every extracted shadow soldier */
+  igris: "/models/world/igris.glb",
+  /** the Shadow Wraith — THE SYSTEM's body above the Awakening Circle */
+  wraith: "/models/world/wraith.glb",
+  /** Sketchfab props (CC-BY, credited at the Shadow Gate) */
+  props: {
+    throne: "/models/world/throne.glb",
+    gargoyle: "/models/world/gargoyle.glb",
+    brazier: "/models/world/brazier.glb",
+    angel: "/models/world/angel.glb",
+  },
   kit: "/models/world/dungeon-kit.glb",
   forged: "/models/world/forged.glb",
-  hologram: "/models/player.glb",
-  skeletons: {
-    warrior: "/models/world/skeleton-warrior.glb",
-    mage: "/models/world/skeleton-mage.glb",
-    rogue: "/models/world/skeleton-rogue.glb",
-    minion: "/models/world/skeleton-minion.glb",
-  },
   hdri: "/env/night.hdr",
   stone: {
     map: "/textures/stone/diff.jpg",
@@ -30,7 +35,7 @@ export const ASSETS = {
   },
 } as const;
 
-export type SkeletonKind = keyof typeof ASSETS.skeletons;
+export type PropName = keyof typeof ASSETS.props;
 
 /**
  * One clock for every shader in the world: materials share this uniform

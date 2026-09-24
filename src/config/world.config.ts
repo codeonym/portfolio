@@ -55,7 +55,7 @@ export const zones: ZoneDef[] = [
     radius: 7.5,
     verb: "Descend into",
     description:
-      "Projects, framed as fallen soldiers. Each skeleton is one quest (project); commanding ARISE extracts it as a shadow and reveals the project details.",
+      "Projects, framed as fallen soldiers. Each fallen knight is one quest (project); commanding ARISE extracts it as a shadow and reveals the project details.",
   },
   {
     id: "armory",
@@ -167,10 +167,10 @@ export const world = {
     tips: [
       "Click anywhere on the ground to walk there. Hold SHIFT to run.",
       "WASD or the arrow keys move the Hunter. Drag to turn the camera.",
-      "Every skeleton in the Shadow Crypt is a project. Command it to ARISE.",
+      "Every fallen knight in the Shadow Crypt is a project. Command it to ARISE.",
       "Risen shadows follow the Hunter everywhere.",
       "Press M to open the world map and fast-travel to any zone.",
-      "The hologram at the center is THE SYSTEM. Press T and ask it anything — it can open any window for you.",
+      "The giant wraith at the center is THE SYSTEM. Press T and ask it anything — it can open any window for you.",
     ],
   },
 
@@ -209,11 +209,11 @@ export const world = {
       "Every record unlocked. The Player would be glad to hear from you — the Shadow Gate is open.",
   },
 
-  /** THE SYSTEM — the agent that lives in the hologram at the Awakening Circle */
+  /** THE SYSTEM — the agent embodied by the wraith above the Awakening Circle */
   agent: {
     name: "THE SYSTEM",
     epithet: "the entity that chose the Player",
-    /** the HUD prompt shown when the Hunter stands at the hologram */
+    /** the HUD prompt shown when the Hunter stands at the Awakening Circle */
     promptVerb: "Speak with",
     promptKey: "T",
     greeting:
@@ -232,5 +232,5 @@ export const world = {
   },
 
   credits:
-    "Models: KayKit by Kay Lousberg (CC0) · HDRI & textures: Poly Haven (CC0) · Sounds: Kenney (CC0)",
+    "Sung Jin-Woo by bgang0892 (Sketchfab Standard) · Igris by missafe · Shadow Wraith by patromes · Throne by Matt LeMoine · Gargoyle by adamvfc · Brazier by Sky_Hunter · Angel by SebastianSosnowski (Sketchfab, CC BY 4.0) · Models: KayKit by Kay Lousberg (CC0) · HDRI & textures: Poly Haven (CC0) · Sounds: Kenney (CC0)",
 };
