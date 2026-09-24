@@ -203,7 +203,7 @@ export const world = {
     tapPrompt: "TAP",
     arise: "ARISE",
     ariseAll: "ARISE — ALL",
-    controlsDesktop: "CLICK · WASD move — SHIFT run — DRAG look — M map — E interact — T speak — F fullscreen",
+    controlsDesktop: "CLICK · WASD move — SHIFT run — DRAG look — M map — E interact — T speak — hold V talk — F fullscreen",
     controlsTouch: "TAP to move — STICK to steer — TAP a marker to interact",
   },
 
@@ -237,6 +237,20 @@ export const world = {
     ],
     offline: "The System is unreachable. The link to the Gate will return shortly.",
     footer: "AI · LangChain agent via CopilotKit — answers can be wrong; the CV is the source of truth.",
+    /** hold-to-talk: the System's voice (a second agent that delegates to this one) */
+    voice: {
+      key: "V",
+      hold: "Hold to speak",
+      listening: "LISTENING",
+      decoding: "DECODING VOICE",
+      thinking: "THE SYSTEM CONSIDERS",
+      speaking: "THE SYSTEM SPEAKS",
+      nothingHeard: "The System heard only silence. Hold the key while you speak.",
+      micBlocked: "The System cannot hear you — allow the microphone for this site.",
+      unsupported: "This browser cannot record your voice.",
+      muted: "Sound is off — the System answers in captions.",
+      tasks: "DELEGATED TASKS",
+    },
   },
 
   credits:

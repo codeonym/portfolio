@@ -1,11 +1,21 @@
+import { after } from "next/server";
+import { awaitAllCallbacks } from "@langchain/core/callbacks/promises";
 import { CopilotRuntime, createCopilotRuntimeHandler, InMemoryAgentRunner } from "@copilotkit/runtime/v2";
-import { createSystemAgent, SYSTEM_AGENT_ID } from "@/agent/server/system-agent";
+import { OpenRouterTranscriptionService } from "@/agent/server/audio";
 import { hasModelKey } from "@/agent/server/model";
+import { clientIp, limited, reject } from "@/agent/server/rate-limit";
+import { createSystemAgent, createVoiceAgent, SYSTEM_AGENT_ID, VOICE_AGENT_ID } from "@/agent/server/system-agent";
 
 /**
  * ── COPILOTKIT RUNTIME (v2, single endpoint) ──────────────────
  * The browser's CopilotKit provider talks to this one POST route; the
- * runtime runs the System agent in-process and streams AG-UI events.
+ * runtime runs both Systems in-process and streams AG-UI events:
+ *
+ *  · `system`       — the text agent (world tools, dialogue window)
+ *  · `system-voice` — the voice agent (talks, delegates tasks)
+ *
+ * plus `transcribe`: CopilotKit's speech-to-text route, served by
+ * OpenRouter STT (`STT_MODEL_ID`).
  */
 
 export const runtime = "nodejs";
@@ -13,38 +23,20 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 const copilotRuntime = new CopilotRuntime({
-  agents: { [SYSTEM_AGENT_ID]: createSystemAgent() },
+  agents: { [SYSTEM_AGENT_ID]: createSystemAgent(), [VOICE_AGENT_ID]: createVoiceAgent() },
   runner: new InMemoryAgentRunner({ maxThreads: 300, maxRunsPerThread: 40, onConcurrentRun: "supersede" }),
+  transcriptionService: new OpenRouterTranscriptionService(),
 });
 
 /* ── guards: this endpoint spends real tokens on a public site ── */
 
-/** only what the chat needs — the in-memory thread routes list every visitor's threads */
-const ALLOWED = new Set(["info", "agent/run", "agent/connect", "agent/stop"]);
-const MAX_BODY = 384 * 1024;
+/** only what the chat and voice need — the in-memory thread routes list every visitor's threads */
+const ALLOWED = new Set(["info", "agent/run", "agent/connect", "agent/stop", "transcribe"]);
+/** a few seconds of base64 speech fit well under this */
+const MAX_BODY = 3 * 1024 * 1024;
 const WINDOW_MS = 10 * 60_000;
-const RUNS_PER_WINDOW = 30;
-const hits = new Map<string, number[]>();
-
-function clientIp(req: Request) {
-  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "anon";
-}
-
-/** best-effort per-instance sliding window (serverless instances don't share it) */
-function limited(ip: string) {
-  const now = Date.now();
-  const recent = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
-  recent.push(now);
-  hits.set(ip, recent);
-  if (hits.size > 5000) {
-    // drop idle visitors rather than resetting everyone's budget
-    for (const [key, times] of hits) if (now - times[times.length - 1] >= WINDOW_MS) hits.delete(key);
-  }
-  return recent.length > RUNS_PER_WINDOW;
-}
-
-const reject = (status: number, message: string) =>
-  new Response(JSON.stringify({ error: message }), { status, headers: { "content-type": "application/json" } });
+/** one spoken turn costs a voice run, a task run and a report run */
+const BUDGET = { run: 60, transcribe: 40 };
 
 const handler = createCopilotRuntimeHandler({
   runtime: copilotRuntime,
@@ -57,11 +49,18 @@ const handler = createCopilotRuntimeHandler({
     },
     onBeforeHandler: ({ request, route }) => {
       if (!ALLOWED.has(route.method)) throw reject(404, "Not found.");
-      if (route.method !== "agent/run") return;
+      if (route.method !== "agent/run" && route.method !== "transcribe") return;
       if (!hasModelKey()) throw reject(503, "The System is dormant (no model key configured).");
-      if (limited(clientIp(request))) throw reject(429, "The System needs a moment to recover its mana. Try again in a few minutes.");
+      const bucket = route.method === "transcribe" ? "transcribe" : "run";
+      if (limited(`${bucket}:${clientIp(request)}`, BUDGET[bucket], WINDOW_MS)) {
+        throw reject(429, "The System needs a moment to recover its mana. Try again in a few minutes.");
+      }
     },
   },
 });
 
-export const POST = (request: Request) => handler(request);
+export const POST = (request: Request) => {
+  // LangSmith uploads traces in the background; on serverless, finish them before the function freezes
+  if (process.env.LANGSMITH_TRACING === "true") after(awaitAllCallbacks);
+  return handler(request);
+};

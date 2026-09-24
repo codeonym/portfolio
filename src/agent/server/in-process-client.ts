@@ -229,6 +229,10 @@ export function createInProcessClient({ graphId, getGraph }: InProcessClientOpti
           try {
             const events = graph.streamEvents(input, {
               version: "v2",
+              // LangSmith (when LANGSMITH_TRACING=true): one named trace per run, grouped by thread
+              runName: graphId,
+              tags: [graphId],
+              metadata: { agent: graphId, thread_id: threadId },
               configurable: { ...(payload.config?.configurable ?? {}), ...threadConfig(threadId, payload.checkpointId).configurable },
               recursionLimit: payload.config?.recursion_limit ?? 40,
               signal: controller.signal,

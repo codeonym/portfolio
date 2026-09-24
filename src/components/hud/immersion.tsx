@@ -47,6 +47,14 @@ export async function toggleImmersion() {
   }
 }
 
+/** enter / leave fullscreen from code; false when the browser refuses (no recent gesture) */
+export async function setImmersion(on: boolean) {
+  if (!!document.fullscreenElement === on) return true;
+  if (!document.fullscreenEnabled) return false;
+  await toggleImmersion();
+  return !!document.fullscreenElement === on;
+}
+
 export function ImmersionButton() {
   const on = useImmersive();
   const can = useCanImmerse();

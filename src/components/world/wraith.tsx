@@ -88,7 +88,7 @@ export function Wraith() {
   const surge = useRef(1);
   useFrame(({ clock }, delta) => {
     const t = clock.elapsedTime;
-    surge.current += ((live.agentBusy ? 4 : 1) - surge.current) * Math.min(1, delta * 2.5);
+    surge.current += (Math.max(live.agentBusy ? 4 : 1, live.voiceSurge) - surge.current) * Math.min(1, delta * 2.5);
     const k = surge.current;
     const g = root.current;
     if (g) {

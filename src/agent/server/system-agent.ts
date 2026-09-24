@@ -3,9 +3,10 @@ import { LangGraphAgent, type LangGraphAgentConfig } from "@ag-ui/langgraph";
 import { getSystemGraph } from "./agent";
 import { createInProcessClient } from "./in-process-client";
 import { resolveModelId } from "./model";
-import { SYSTEM_AGENT_ID } from "../constants";
+import { getVoiceGraph } from "./voice-agent";
+import { SYSTEM_AGENT_ID, VOICE_AGENT_ID } from "../constants";
 
-export { SYSTEM_AGENT_ID };
+export { SYSTEM_AGENT_ID, VOICE_AGENT_ID };
 
 type MergeArgs = Parameters<LangGraphAgent["langGraphDefaultMergeState"]>;
 
@@ -35,15 +36,22 @@ class SystemAgent extends LangGraphAgent {
   }
 }
 
-export function createSystemAgent() {
+function inProcessAgent(id: string, getGraph: Parameters<typeof createInProcessClient>[0]["getGraph"]) {
   return new SystemAgent({
-    agentId: SYSTEM_AGENT_ID,
-    graphId: SYSTEM_AGENT_ID,
+    agentId: id,
+    graphId: id,
     // never dialed — the in-process client below replaces the HTTP client
-    deploymentUrl: "in-process://system",
-    client: createInProcessClient({
-      graphId: SYSTEM_AGENT_ID,
-      getGraph: async () => getSystemGraph(await resolveModelId()),
-    }),
+    deploymentUrl: `in-process://${id}`,
+    client: createInProcessClient({ graphId: id, getGraph }),
   });
+}
+
+/** the text System: world tools, archive, the dialogue window */
+export function createSystemAgent() {
+  return inProcessAgent(SYSTEM_AGENT_ID, async () => getSystemGraph(await resolveModelId()));
+}
+
+/** the voice System: talks, and delegates every action to the text System */
+export function createVoiceAgent() {
+  return inProcessAgent(VOICE_AGENT_ID, async () => getVoiceGraph(await resolveModelId()));
 }
