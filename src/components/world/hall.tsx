@@ -7,6 +7,7 @@ import {
   Color,
   MeshBasicMaterial,
   MeshStandardMaterial,
+  type Group,
   type Mesh,
   type Object3D,
   type PointLight,
@@ -40,6 +41,14 @@ const TORCH_LIGHTS: [number, number, number][] = [
   [6.6, 4.1, 13.7],
   [-6.6, 4.1, 6],
   [6.6, 4.1, -2.7],
+];
+
+/** the four statue pedestals flanking the nave — [x, top of pedestal, z] */
+const PEDESTALS: [number, number, number][] = [
+  [-4.78, 2.9, -11.73],
+  [4.87, 2.85, -11.73],
+  [-7.44, 1.84, 2.16],
+  [7.31, 1.84, 2.16],
 ];
 
 const EMBER = "#ff7a2f";
@@ -173,6 +182,46 @@ function TorchLight({ position, seed, intensity }: { position: [number, number, 
   return <pointLight ref={light} position={position} color={EMBER} intensity={intensity} distance={14} decay={1.7} />;
 }
 
+/**
+ * Shadow crystals — the Monarch's mana, hovering over the statue pedestals.
+ * Self-lit (emissive + bloom), no real lights: they cost nothing per fragment.
+ */
+function ShadowCrystals() {
+  const root = useRef<Group>(null);
+  const mat = useMemo(
+    () =>
+      new MeshStandardMaterial({
+        color: "#140f24",
+        emissive: new Color(COLORS.arcane),
+        emissiveIntensity: 1.6,
+        metalness: 0.4,
+        roughness: 0.18,
+        flatShading: true,
+      }),
+    [],
+  );
+  useFrame(({ clock }) => {
+    const t = clock.elapsedTime;
+    root.current?.children.forEach((c, i) => {
+      const crystal = c.children[0];
+      crystal.rotation.y = t * 0.4 + i * 1.3;
+      crystal.position.y = 1.05 + Math.sin(t * 0.9 + i * 1.7) * 0.12;
+    });
+  });
+  return (
+    <group ref={root}>
+      {PEDESTALS.map(([x, y, z], i) => (
+        <group key={i} position={[x, y, z]}>
+          <mesh material={mat} scale={[0.34, 0.95, 0.34]} castShadow>
+            <octahedronGeometry args={[1, 0]} />
+          </mesh>
+          <Sparkles count={10} scale={[1, 2, 1]} position={[0, 1.1, 0]} size={2.4} speed={0.35} color="#b7a6ff" />
+        </group>
+      ))}
+    </group>
+  );
+}
+
 /** moonlight through the high windows, as slanted slabs of light */
 function Shafts({ strength }: { strength: number }) {
   const mat = useMemo(() => createShaftMaterial("#8fa2ff", strength), [strength]);
@@ -227,6 +276,7 @@ export function Hall({ quality }: { quality: Quality }) {
       ))}
       {/* one light for both fire bowls, over the dais */}
       <TorchLight position={[0, 4.6, -7.4]} seed={9} intensity={34} />
+      <ShadowCrystals />
       {quality !== "low" && <Shafts strength={quality === "high" ? 1 : 0.7} />}
       {/* mist pooled on the floor, thickest down the nave */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.35, (hall.north + hall.south) / 2]} material={mist} renderOrder={2}>
