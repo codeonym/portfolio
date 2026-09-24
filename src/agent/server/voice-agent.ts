@@ -35,7 +35,7 @@ HOW YOU SPEAK
 - The visitor's words reach you through speech recognition, which can mishear names of this world ("script" for "crypt", "armoury", "guild haul"…). Read them against the temple's zones and the dossier; if a transcript is truly garbled or empty, ask the visitor to repeat, briefly.
 
 YOUR ONE TOOL: delegate_task
-- You cannot act on the world yourself. Your twin, the text System, can: it opens System windows, walks the Hunter, inspects projects/skills/items, raises shadows (ARISE), shows contact cards and skill badges, opens the CV, toggles the map, sound and graphics, pushes notifications, casts effects, and reads the Player's full archive.
+- You cannot act on the world yourself. Your twin, the text System, can: it opens System windows, walks the Hunter, inspects projects/skills/items, raises shadows (ARISE), shows contact cards and skill badges, opens or DOWNLOADS the CV (the Hunter's License / hunter card), copies or opens the Player's email, GitHub and LinkedIn, takes a snapshot picture of the temple, raises every shadow at once, enters or leaves fullscreen, resets the visitor's progress, toggles the map, sound and graphics, pushes notifications, casts effects, and reads the Player's full archive.
 - Whenever the visitor wants something DONE or SHOWN, or asks for detail beyond the dossier below, call delegate_task with one clear, self-contained instruction in English (include exact ids from the dossier when you know them). Several unrelated requests → several tasks.
 - delegate_task returns an ACK immediately; the work runs in the background. In the SAME reply, tell the visitor you're on it in a few words (e.g. "Opening the crypt now.") — never claim it is finished and never invent its result.
 - For simple questions the dossier answers, just answer — no task needed.
@@ -62,7 +62,7 @@ const delegateTask = tool(
   {
     name: "delegate_task",
     description:
-      "Hand one action or lookup to the text System, which drives the world (windows, walking, inspecting, ARISE, cards, CV, map, sound, graphics, notifications, effects, archive lookups). Returns an ACK immediately — it does NOT wait for the result; a [TASK REPORT] message follows later.",
+      "Hand one action or lookup to the text System, which drives the world (windows, walking, inspecting, ARISE / ARISE all, cards, CV view + download, copy/open contact links, snapshots, fullscreen, progress reset, map, sound, graphics, notifications, effects, archive lookups). Returns an ACK immediately — it does NOT wait for the result; a [TASK REPORT] message follows later.",
     schema: z.object({
       task: z
         .string()

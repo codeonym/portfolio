@@ -1,12 +1,15 @@
 import { z } from "zod";
+import { player } from "@/config/player.config";
 import { findItem, inventoryItems } from "@/config/inventory.config";
 import { quests } from "@/config/quests.config";
 import { findSkill, skills } from "@/config/skills.config";
 import type { Tone, ZoneId } from "@/config/types";
 import { zoneById, zoneIds } from "@/config/world.config";
+import { setImmersion } from "@/components/hud/immersion";
 import { addShake, kickAberration } from "@/components/world/follow-camera";
 import { chime, play } from "@/lib/audio";
 import { levelFor, useWorldStore, type Quality } from "@/store/world-store";
+import { CHANNELS, channelTarget, snapshotFileName } from "./automation";
 
 /**
  * ── AGENT BRIDGE · WRITE SIDE ─────────────────────────────────
@@ -24,7 +27,7 @@ export interface SystemCommand<S extends z.ZodObject = z.ZodObject> {
   name: string;
   description: string;
   parameters: S;
-  handler: (args: z.infer<S>) => string;
+  handler: (args: z.infer<S>) => string | Promise<string>;
 }
 
 const define = <S extends z.ZodObject>(cmd: SystemCommand<S>) => cmd as unknown as SystemCommand;
@@ -36,6 +39,62 @@ const ZONE = z
   );
 
 const store = () => useWorldStore.getState();
+
+const CV_URL = "/cv.pdf";
+const CV_FILE = "bouarour-ayoub-cv.pdf";
+
+/** a same-origin download — allowed without a user gesture */
+function download(href: string, filename: string) {
+  const a = document.createElement("a");
+  a.href = href;
+  a.download = filename;
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+/**
+ * The 3D view as a PNG. Read inside the next animation frame, after
+ * the renderer has drawn it (the WebGL buffer is not preserved).
+ */
+function captureCanvas(): Promise<Blob | null> {
+  const canvas = document.querySelector("canvas");
+  if (!canvas) return Promise.resolve(null);
+  return new Promise((resolve) => requestAnimationFrame(() => canvas.toBlob(resolve, "image/png")));
+}
+
+/** a rise that has not finished by now has stalled (e.g. a hidden tab stops the render loop) */
+const RISE_STALL_MS = 15_000;
+
+/** raise every fallen shadow, one after another; resolves with how many rose */
+function ariseAll(): Promise<number> {
+  const fallen = () => quests.filter((q) => !store().risen.includes(q.id));
+  const before = store().risen.length;
+  return new Promise((resolve) => {
+    let timer = 0;
+    let stall = 0;
+    const finish = () => {
+      unsubscribe();
+      window.clearTimeout(timer);
+      window.clearTimeout(stall);
+      resolve(store().risen.length - before);
+    };
+    const step = () => {
+      window.clearTimeout(stall);
+      stall = window.setTimeout(finish, RISE_STALL_MS);
+      if (store().rising) return;
+      const next = fallen()[0];
+      if (!next) return finish();
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => store().arise(next.id), 350);
+    };
+    const unsubscribe = useWorldStore.subscribe((s, prev) => {
+      if (prev.rising && !s.rising) step();
+    });
+    step();
+  });
+}
 
 export const systemCommands: SystemCommand[] = [
   define({
@@ -117,6 +176,112 @@ export const systemCommands: SystemCommand[] = [
     },
   }),
   define({
+    name: "download_cv",
+    description:
+      "Download the Hunter's License — the Player's CV as a PDF file — straight to the visitor's device. Use when they want to download, save or get the CV / resume / hunter card.",
+    parameters: z.object({}),
+    handler: () => {
+      download(CV_URL, CV_FILE);
+      store().completeQuest("license");
+      return `Download of ${CV_FILE} started on the visitor's device.`;
+    },
+  }),
+  define({
+    name: "copy_contact",
+    description: "Copy one of the Player's channels (email address, GitHub, LinkedIn) or this portfolio's link to the visitor's clipboard.",
+    parameters: z.object({ channel: z.enum(CHANNELS) }),
+    handler: async ({ channel }) => {
+      const { label, text } = channelTarget(channel, player.links, window.location.origin);
+      try {
+        await navigator.clipboard.writeText(text);
+        store().pushToast({ heading: "COPIED", body: `${label} → clipboard`, tone: "system" });
+        return `Copied the ${label} to the visitor's clipboard.`;
+      } catch {
+        store().pushToast({ heading: label.toUpperCase(), body: text, tone: "system" });
+        return `The browser blocked the clipboard, so the ${label} is shown in a notification instead.`;
+      }
+    },
+  }),
+  define({
+    name: "open_link",
+    description:
+      "Open one of the Player's channels for the visitor: GitHub or LinkedIn in a new tab, email in their mail app (a new message to the Player), or this portfolio's link.",
+    parameters: z.object({ channel: z.enum(CHANNELS) }),
+    handler: ({ channel }) => {
+      const { label, href } = channelTarget(channel, player.links, window.location.origin);
+      if (channel === "email") {
+        window.location.href = href;
+        return "Opened a new email to the Player in the visitor's mail app.";
+      }
+      const tab = window.open(href, "_blank");
+      if (!tab) {
+        return `The browser blocked the new tab. Call show_contact_card so the visitor can open the ${label} with a click.`;
+      }
+      tab.opener = null;
+      return `Opened the ${label} in a new tab.`;
+    },
+  }),
+  define({
+    name: "capture_snapshot",
+    description: "Take a picture of the 3D temple as the visitor sees it right now (without the HUD) and download it as a PNG.",
+    parameters: z.object({}),
+    handler: async () => {
+      const blob = await captureCanvas();
+      if (!blob) return "The view could not be captured (no 3D view on screen).";
+      const url = URL.createObjectURL(blob);
+      const name = snapshotFileName(new Date());
+      download(url, name);
+      window.setTimeout(() => URL.revokeObjectURL(url), 10_000);
+      play("click");
+      return `Snapshot saved as ${name}.`;
+    },
+  }),
+  define({
+    name: "arise_all",
+    description:
+      "Raise EVERY fallen quest (project) in the Shadow Crypt, one extraction after another, until the whole legion stands. Opens the crypt. Takes a few seconds per shadow.",
+    parameters: z.object({}),
+    handler: async () => {
+      const s = store();
+      if (quests.every((q) => s.risen.includes(q.id))) return "Every quest has already risen.";
+      if (s.panel !== "crypt") {
+        s.travelTo("crypt");
+        window.setTimeout(() => store().openPanel("crypt"), 450);
+        await new Promise((r) => window.setTimeout(r, 1300));
+      }
+      const count = await ariseAll();
+      const risen = store().risen.length;
+      const tally = `${count} shadow${count === 1 ? "" : "s"} extracted`;
+      return risen === quests.length
+        ? `ARISE — ${tally}; the legion is complete (${risen}/${quests.length}).`
+        : `ARISE — ${tally}, then the extraction stalled (${risen}/${quests.length} risen). Offer to try again.`;
+    },
+  }),
+  define({
+    name: "set_fullscreen",
+    description: "Enter or leave immersive (fullscreen) mode.",
+    parameters: z.object({ on: z.boolean() }),
+    handler: async ({ on }) => {
+      const ok = await setImmersion(on);
+      if (ok) return `Immersive mode ${on ? "on" : "off"}.`;
+      store().pushToast({ heading: "IMMERSION", body: "Press F (or the fullscreen chip) to enter immersive mode.", tone: "system" });
+      return "The browser only allows fullscreen from the visitor's own click or key press — a notification now tells them to press F.";
+    },
+  }),
+  define({
+    name: "reset_progress",
+    description:
+      "Wipe the visitor's progress (level, XP, discovered zones, completed quests, risen shadows) and start over. ONLY when the visitor explicitly asks to reset / start over.",
+    parameters: z.object({}),
+    handler: () => {
+      const s = store();
+      if (s.rising) return "A shadow is mid-extraction; try again in a few seconds.";
+      s.closePanel();
+      s.resetProgress();
+      return "Progress reset: the visitor is back to level 1 and every shadow has fallen again.";
+    },
+  }),
+  define({
     name: "toggle_map",
     description: "Open or close the world map (fast-travel overlay).",
     parameters: z.object({ open: z.boolean() }),
@@ -181,16 +346,18 @@ export const systemCommands: SystemCommand[] = [
   }),
 ];
 
-export function executeSystemCommand(name: string, args: Record<string, unknown> = {}): string {
+export function executeSystemCommand(name: string, args: Record<string, unknown> = {}): string | Promise<string> {
   const cmd = systemCommands.find((c) => c.name === name);
   if (!cmd) return `Unknown command "${name}". Available: ${systemCommands.map((c) => c.name).join(", ")}.`;
   const parsed = cmd.parameters.safeParse(args ?? {});
   if (!parsed.success) {
     return `Invalid arguments for "${name}": ${parsed.error.issues.map((i) => `${i.path.join(".") || "args"} ${i.message}`).join("; ")}`;
   }
+  const failed = (err: unknown) => `Command "${name}" failed: ${err instanceof Error ? err.message : String(err)}`;
   try {
-    return cmd.handler(parsed.data);
+    const result = cmd.handler(parsed.data);
+    return typeof result === "string" ? result : result.catch(failed);
   } catch (err) {
-    return `Command "${name}" failed: ${err instanceof Error ? err.message : String(err)}`;
+    return failed(err);
   }
 }
