@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { zones } from "@/config/world.config";
 import { play } from "@/lib/audio";
 import { live, useWorldStore } from "@/store/world-store";
+import { toggleImmersion } from "./immersion";
 
 const KEYS = {
   up: ["KeyW", "ArrowUp", "KeyZ"],
@@ -20,7 +21,7 @@ function typing(e: KeyboardEvent) {
 /**
  * Keyboard → `live.input` (movement never touches React state) plus
  * the command keys: E interact · T speak with THE SYSTEM · M map · Esc
- * back · 1–6 walk to a zone.
+ * back · F immersive fullscreen · 1–6 walk to a zone.
  */
 export function KeyboardInput() {
   useEffect(() => {
@@ -60,6 +61,9 @@ export function KeyboardInput() {
       if (e.code === "KeyE" && s.nearZone && !s.panel) {
         play("open");
         return s.openPanel(s.nearZone);
+      }
+      if (e.code === "KeyF") {
+        return void toggleImmersion();
       }
       if (e.code === "KeyM") {
         play(s.mapOpen ? "close" : "open");

@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { toneColor } from "@/components/world/assets";
 import { HALL_CENTER_Z, HALL_OUTLINE } from "@/components/world/layout";
 import { levelFor, live, useWorldStore, type Quality } from "@/store/world-store";
+import { ImmersionButton } from "./immersion";
 
 /* ── visitor card: the visitor's own level, XP and sync rate ── */
 export function VisitorCard() {
@@ -296,6 +297,7 @@ export function SystemControls() {
         <Gauge className="size-4" />
         <span className="hidden sm:inline">{quality.toUpperCase()}</span>
       </button>
+      <ImmersionButton />
     </div>
   );
 }
