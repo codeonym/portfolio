@@ -1,7 +1,10 @@
 """
-Retarget — bakes the KayKit Hunter's clips onto another humanoid rig.
+Retarget — bakes a humanoid's clips onto another humanoid rig.
 
-    python3 scripts/assets/retarget.py <source.glb> <target.glb> <out.glb>
+    python3 scripts/assets/retarget.py [--from mixamo|kaykit] <source.glb> <target.glb> <out.glb>
+
+The source is a Mixamo clip bundle (scripts/assets/mixamo-merge.py) or a
+KayKit Rig_Medium character; the target is Sung's 3ds Max Biped rig.
 
 Pure Python (no numpy, no Blender). Works directly on glTF node data:
 
@@ -14,8 +17,8 @@ Pure Python (no numpy, no Blender). Works directly on glTF node data:
      one glTF animation per clip; the pelvis also gets the source hips'
      translation, scaled by leg length.
 
-Bone map: KayKit Rig_Medium → 3ds Max Biped (Bip001 …). Unmapped target
-bones (clavicles, fingers, hair, belt) keep their rest pose.
+Bone maps: Mixamo / KayKit Rig_Medium → 3ds Max Biped (Bip001 …). Unmapped
+target bones (fingers, hair, belt) keep their rest pose.
 """
 
 import json
@@ -26,7 +29,7 @@ import sys
 FPS = 30
 
 # (source joint, target joint, source child for direction, target child for direction)
-BONES = [
+KAYKIT = [
     ("hips", "Bip001 Pelvis", "spine", "Bip001 Spine"),
     ("spine", "Bip001 Spine", "chest", "Bip001 Spine2"),
     ("chest", "Bip001 Spine2", "head", "Bip001 Neck"),
@@ -44,11 +47,53 @@ BONES = [
     ("lowerleg.r", "Bip001 R Calf", "foot.r", "Bip001 R Foot"),
     ("foot.r", "Bip001 R Foot", "toes.r", "Bip001 R Toe0"),
 ]
-ROOT = ("hips", "Bip001 Pelvis")
-# the chibi source holds its arms high and lifts its knees hard; a realistic
-# body reads better with the arms lowered and the leg swing damped
-ARM_DOWN = math.radians(28)
-GAIN = {"upperleg.l": 0.75, "upperleg.r": 0.75, "lowerleg.l": 0.8, "lowerleg.r": 0.8}
+
+
+def _mixamo():
+    m = "mixamorig:"
+    bones = [
+        (m + "Hips", "Bip001 Pelvis", m + "Spine", "Bip001 Spine"),
+        (m + "Spine", "Bip001 Spine", m + "Spine1", "Bip001 Spine1"),
+        (m + "Spine1", "Bip001 Spine1", m + "Spine2", "Bip001 Spine2"),
+        (m + "Spine2", "Bip001 Spine2", m + "Neck", "Bip001 Neck"),
+        (m + "Neck", "Bip001 Neck", m + "Head", "Bip001 Head"),
+        (m + "Head", "Bip001 Head", None, None),
+    ]
+    for side, s in (("Left", "L"), ("Right", "R")):
+        b = f"Bip001 {s} "
+        bones += [
+            (m + side + "Shoulder", b + "Clavicle", m + side + "Arm", b + "UpperArm"),
+            (m + side + "Arm", b + "UpperArm", m + side + "ForeArm", b + "Forearm"),
+            (m + side + "ForeArm", b + "Forearm", m + side + "Hand", b + "Hand"),
+            (m + side + "Hand", b + "Hand", m + side + "HandMiddle1", b + "Finger2"),
+            (m + side + "UpLeg", b + "Thigh", m + side + "Leg", b + "Calf"),
+            (m + side + "Leg", b + "Calf", m + side + "Foot", b + "Foot"),
+            (m + side + "Foot", b + "Foot", m + side + "ToeBase", b + "Toe0"),
+        ]
+    return bones
+
+
+RIGS = {
+    # the chibi KayKit source holds its arms high and lifts its knees hard;
+    # a realistic body reads better with the arms lowered and the leg swing damped
+    "kaykit": {
+        "bones": KAYKIT,
+        "root": "hips",
+        "legs": ("upperleg.l", "foot.l"),
+        "arm_down": math.radians(28),
+        "gain": {"upperleg.l": 0.75, "upperleg.r": 0.75, "lowerleg.l": 0.8, "lowerleg.r": 0.8},
+        "upperarm": ("upperarm.l", "upperarm.r"),
+    },
+    # Mixamo mocap is already human-proportioned: map it straight across
+    "mixamo": {
+        "bones": _mixamo(),
+        "root": "mixamorig:Hips",
+        "legs": ("mixamorig:LeftUpLeg", "mixamorig:LeftFoot"),
+        "arm_down": 0.0,
+        "gain": {},
+        "upperarm": ("mixamorig:LeftArm", "mixamorig:RightArm"),
+    },
+}
 
 
 # ── quaternion / vector math (x, y, z, w) ──────────────────────────────────
@@ -234,7 +279,10 @@ def sample(times, values, t, path):
 
 
 # ── main ───────────────────────────────────────────────────────────────────
-def main(src_path, dst_path, out_path):
+def main(src_path, dst_path, out_path, rig="kaykit"):
+    cfg = RIGS[rig]
+    BONES, GAIN, ARM_DOWN = cfg["bones"], cfg["gain"], cfg["arm_down"]
+    ROOT = (cfg["root"], "Bip001 Pelvis")
     sdoc, sbin = read_glb(src_path)
     tdoc, tbin = read_glb(dst_path)
     sname = {n.get("name"): i for i, n in enumerate(sdoc["nodes"])}
@@ -255,8 +303,8 @@ def main(src_path, dst_path, out_path):
             align = qbetween(td, sd)
         else:
             align = (0, 0, 0, 1)
-        if s.startswith("upperarm."):
-            side = 1 if s.endswith(".l") else -1
+        if s in cfg["upperarm"] and ARM_DOWN:
+            side = 1 if s == cfg["upperarm"][0] else -1
             align = qmul(qaxis((0, 0, 1), -side * ARM_DOWN), align)
         pairs.append((si, ti, align, GAIN.get(s, 1.0)))
     mapped = {ti: (si, align, gain) for si, ti, align, gain in pairs}
@@ -265,7 +313,7 @@ def main(src_path, dst_path, out_path):
     def leg(w, name, hip, foot):
         return abs(w[name[hip]][0][1] - w[name[foot]][0][1])
 
-    ratio = leg(tw0, tname, "Bip001 L Thigh", "Bip001 L Foot") / leg(sw0, sname, "upperleg.l", "foot.l")
+    ratio = leg(tw0, tname, "Bip001 L Thigh", "Bip001 L Foot") / leg(sw0, sname, *cfg["legs"])
     s_root, t_root = sname[ROOT[0]], tname[ROOT[1]]
 
     tdoc.setdefault("animations", [])
@@ -355,6 +403,10 @@ def main(src_path, dst_path, out_path):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
+    argv = sys.argv[1:]
+    rig = "kaykit"
+    if argv[:1] == ["--from"]:
+        rig, argv = argv[1], argv[2:]
+    if len(argv) != 3 or rig not in RIGS:
         sys.exit(__doc__)
-    main(*sys.argv[1:])
+    main(*argv, rig=rig)
