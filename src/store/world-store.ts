@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { quests } from "@/config/quests.config";
 import type { InspectTarget, Tone, ZoneId } from "@/config/types";
+import { clampToHall } from "@/components/world/layout";
 import {
   visitorQuests,
   world,
@@ -108,13 +109,9 @@ export function levelFor(xp: number) {
   return Math.floor(xp / xpPerLevel) + 1;
 }
 
-/** stand a few units in front of a zone (toward the island center) */
+/** where the Hunter stands to use a zone */
 export function approachPoint(zone: ZoneId): [number, number] {
-  const [x, z] = zoneById[zone].position;
-  const len = Math.hypot(x, z);
-  if (len < 1) return [0, 5.5];
-  const back = zoneById[zone].radius * 0.7;
-  return [x - (x / len) * back, z - (z / len) * back];
+  return zoneById[zone].approach;
 }
 
 export const useWorldStore = create<WorldState>()(
@@ -149,12 +146,7 @@ export const useWorldStore = create<WorldState>()(
       toggleMuted: () => set((s) => ({ muted: !s.muted })),
       setTouch: (touch) => set({ touch }),
 
-      moveTo: (x, z) => {
-        const r = Math.hypot(x, z);
-        const max = world.islandRadius - 2;
-        const k = r > max ? max / r : 1;
-        set({ target: [x * k, z * k], pending: null });
-      },
+      moveTo: (x, z) => set({ target: clampToHall(x, z, 0.7), pending: null }),
       goTo: (zone) => {
         if (get().nearZone === zone) return get().openPanel(zone);
         set({ target: approachPoint(zone), pending: zone, panel: null, inspect: null });

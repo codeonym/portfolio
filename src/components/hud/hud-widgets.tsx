@@ -19,6 +19,7 @@ import { visitorQuests, world, xpPerLevel, zoneById, zones } from "@/config/worl
 import { chime, duckMusic, play } from "@/lib/audio";
 import { cn } from "@/lib/utils";
 import { toneColor } from "@/components/world/assets";
+import { HALL_CENTER_Z, HALL_OUTLINE } from "@/components/world/layout";
 import { levelFor, live, useWorldStore, type Quality } from "@/store/world-store";
 
 /* ── visitor card: the visitor's own level, XP and sync rate ── */
@@ -300,7 +301,7 @@ export function SystemControls() {
 }
 
 /* ── minimap: canvas, redrawn every frame from `live` ── */
-const MAP_SCALE = 1 / (world.islandRadius + 4);
+const MAP_SCALE = 1 / ((world.hall.south - world.hall.north) / 2 + 2);
 
 export function Minimap({ size = 150 }: { size?: number }) {
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -319,18 +320,24 @@ export function Minimap({ size = 150 }: { size?: number }) {
       const r = size / 2;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, size, size);
-      // island
+      // the hall's floor plan
       ctx.fillStyle = "rgba(20,14,40,0.75)";
       ctx.strokeStyle = "rgba(139,92,246,0.55)";
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.arc(r, r, world.islandRadius * MAP_SCALE * r, 0, Math.PI * 2);
+      HALL_OUTLINE.forEach(([x, z], i) => {
+        const px = r + x * MAP_SCALE * r;
+        const py = r + (z - HALL_CENTER_Z) * MAP_SCALE * r;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      });
+      ctx.closePath();
       ctx.fill();
       ctx.stroke();
-      // zones
+      // stations
       for (const z of zones) {
         const x = r + z.position[0] * MAP_SCALE * r;
-        const y = r + z.position[1] * MAP_SCALE * r;
+        const y = r + (z.position[1] - HALL_CENTER_Z) * MAP_SCALE * r;
         const seen = visited.includes(z.id);
         ctx.fillStyle = seen ? toneColor[z.tone] : "rgba(160,150,200,0.35)";
         ctx.beginPath();
@@ -343,7 +350,7 @@ export function Minimap({ size = 150 }: { size?: number }) {
       }
       // hunter arrow
       const hx = r + live.hunter.x * MAP_SCALE * r;
-      const hy = r + live.hunter.z * MAP_SCALE * r;
+      const hy = r + (live.hunter.z - HALL_CENTER_Z) * MAP_SCALE * r;
       ctx.save();
       ctx.translate(hx, hy);
       ctx.rotate(-live.hunter.heading + Math.PI);
@@ -375,7 +382,9 @@ export function Minimap({ size = 150 }: { size?: number }) {
   );
 }
 
-/* ── world map: fast travel to discovered zones, walk to the rest ── */
+/* ── temple map: fast travel to discovered stations, walk to the rest ── */
+const MAP_HALF = (world.hall.south - world.hall.north) / 2 + 3;
+
 export function WorldMap() {
   const open = useWorldStore((s) => s.mapOpen);
   const setOpen = useWorldStore((s) => s.setMapOpen);
@@ -411,14 +420,16 @@ export function WorldMap() {
             <p className="sys-heading">{world.hud.mapLabel}</p>
             <p className="mt-1 text-sm text-muted-foreground">{world.hud.mapHint}</p>
             <div className="relative mx-auto mt-4 aspect-square w-full max-w-[460px]">
-              <svg viewBox="-36 -36 72 72" className="absolute inset-0 size-full">
-                <circle r={world.islandRadius} fill="rgba(20,14,40,0.8)" stroke="var(--arcane)" strokeOpacity="0.6" strokeWidth="0.3" />
-                <circle r={world.islandRadius - 3} fill="none" stroke="var(--arcane)" strokeOpacity="0.2" strokeWidth="0.2" strokeDasharray="1 1.5" />
-                {zones
-                  .filter((z) => z.id !== "awakening")
-                  .map((z) => (
-                    <line key={z.id} x1={0} y1={0} x2={z.position[0]} y2={z.position[1]} stroke={toneColor[z.tone]} strokeOpacity="0.35" strokeWidth="0.35" strokeDasharray="1.2 1" />
-                  ))}
+              <svg viewBox={`-${MAP_HALF} ${HALL_CENTER_Z - MAP_HALF} ${MAP_HALF * 2} ${MAP_HALF * 2}`} className="absolute inset-0 size-full">
+                <polygon
+                  points={HALL_OUTLINE.map(([x, z]) => `${x},${z}`).join(" ")}
+                  fill="rgba(20,14,40,0.8)"
+                  stroke="var(--arcane)"
+                  strokeOpacity="0.6"
+                  strokeWidth="0.3"
+                />
+                {/* the carpet up the nave, Gate to throne */}
+                <line x1={0} y1={world.hall.south} x2={0} y2={zoneById.awakening.position[1] + 3} stroke="var(--arcane)" strokeOpacity="0.3" strokeWidth="1.6" />
               </svg>
               {zones.map((z) => {
                 const seen = visited.includes(z.id);
@@ -431,7 +442,7 @@ export function WorldMap() {
                     onPointerEnter={() => { setHover(z.id); play("hover"); }}
                     onPointerLeave={() => setHover(null)}
                     className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1"
-                    style={{ left: `${50 + (z.position[0] / 72) * 100}%`, top: `${50 + (z.position[1] / 72) * 100}%` }}
+                    style={{ left: `${50 + (z.position[0] / (MAP_HALF * 2)) * 100}%`, top: `${50 + ((z.position[1] - HALL_CENTER_Z) / (MAP_HALF * 2)) * 100}%` }}
                   >
                     <span
                       className={cn("grid size-10 rotate-45 place-items-center border transition-transform hover:scale-110 sm:size-12", !seen && "opacity-60")}

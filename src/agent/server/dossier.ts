@@ -88,7 +88,7 @@ function inventory(full: boolean) {
 function world() {
   const zoneLines = zones.map((z) => `- ${z.id}: ${z.name} → ${z.section}. ${z.description}`).join("\n");
   const questLines = visitorQuests.map((q) => `- ${q.id}: "${q.name}" — ${q.objective} (+${q.xp} XP)`).join("\n");
-  return `Zones of the island (each opens a System window / tab):\n${zoneLines}\nVisitor quests (the visitor earns XP by exploring):\n${questLines}`;
+  return `Zones of the temple (each opens a System window / tab):\n${zoneLines}\nVisitor quests (the visitor earns XP by exploring):\n${questLines}`;
 }
 
 export const dossierDigest = [

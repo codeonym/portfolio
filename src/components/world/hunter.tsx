@@ -2,35 +2,28 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Sparkles, useGLTF } from "@react-three/drei";
+import { useGLTF } from "@react-three/drei";
 import {
   AnimationMixer,
-  Color,
   LoopOnce,
+  LoopRepeat,
   MeshStandardMaterial,
   type AnimationAction,
   type Group,
   type Mesh,
 } from "three";
+import { quests } from "@/config/quests.config";
 import { world, zones } from "@/config/world.config";
 import { footstep, play } from "@/lib/audio";
 import { live, useWorldStore } from "@/store/world-store";
-import { ASSETS, COLORS } from "./assets";
-import { colliders } from "./colliders";
+import { addRim, ASSETS, COLORS } from "./assets";
 import { kickAberration } from "./follow-camera";
+import { floorAt, graveColliders, resolveMove, type Circle } from "./layout";
 
 useGLTF.preload(ASSETS.sung, ASSETS.draco);
 
-type Clip =
-  | "Idle"
-  | "Walking_A"
-  | "Running_A"
-  | "Spellcast_Long"
-  | "Spellcast_Raise"
-  | "Dualwield_Melee_Attack_Slice"
-  | "Cheer"
-  | "Interact"
-  | "Jump_Full_Short";
+/** Mixamo motion capture, retargeted onto Sung's rig (scripts/assets/retarget.py) */
+type Clip = "Idle" | "Idle2" | "Walk" | "Run" | "Jump" | "Cast1H" | "Cast2H" | "Area" | "Kneel";
 
 interface Rig {
   mixer: AnimationMixer;
@@ -40,10 +33,14 @@ interface Rig {
   busyUntil: number;
 }
 
-const BODY_RADIUS = 0.6;
+const BODY_RADIUS = 0.45;
 /** Sung is modelled at 1.87 m; the world is scaled for a ~2.2-unit Hunter */
 const SUNG_SCALE = 1.18;
-const STEP_EVERY = 1.55;
+/** how fast each in-place cycle travels at timeScale 1 (world units/s) — playback is matched to real speed so feet don't skate */
+const NATURAL = { Walk: 1.9, Run: 4.9 };
+const STEP_EVERY = 1.3;
+/** stand idle this long and he shifts his weight / looks around */
+const FIDGET_AFTER = 9;
 
 function shortestAngle(from: number, to: number) {
   let d = (to - from) % (Math.PI * 2);
@@ -54,11 +51,11 @@ function shortestAngle(from: number, to: number) {
 
 /**
  * The Hunter — Sung Jin-Woo, the Shadow Monarch, steered by the visitor.
- * His rig carries the KayKit Hunter's clips, retargeted offline
- * (scripts/assets/retarget.py). Click-to-move, WASD/joystick relative to
- * the camera, circle colliders, and a small animation state machine with
- * one-shot reactions to world events (ARISE → raise spell, opening a zone
- * → interact, level up → cheer).
+ * Click-to-move, WASD/joystick relative to the camera, circle colliders
+ * inside the hall, floor-following, and a small animation state machine
+ * with speed-matched locomotion and one-shot reactions to world events
+ * (ARISE → two-handed raise, opening a station → a summoning gesture,
+ * level up → an area burst, fast travel → a landing).
  */
 export function Hunter() {
   const group = useRef<Group>(null);
@@ -66,26 +63,21 @@ export function Hunter() {
   const rig = useRef<Rig | null>(null);
   const speed = useRef(0);
   const stepAcc = useRef(0);
+  const idleFor = useRef(0);
   const warpSeen = useRef(0);
   const flashT = useRef(1);
 
   const { scene, animations } = useGLTF(ASSETS.sung, ASSETS.draco);
 
-  // night pass: keep his textures, lift them a touch and add a violet
-  // undertone so the black outfit still reads against the dark island
+  // keep his textures; a cold violet rim keeps the black outfit readable in the dark hall
   const model = useMemo(() => {
     scene.traverse((node) => {
       const mesh = node as Mesh;
       if (!mesh.isMesh) return;
       const src = mesh.material as MeshStandardMaterial;
-      mesh.material = new MeshStandardMaterial({
-        map: src.map,
-        color: new Color("#c9c3e6"),
-        roughness: 0.62,
-        metalness: 0.1,
-        emissive: new Color("#1d1040"),
-        emissiveIntensity: 0.7,
-      });
+      const m = new MeshStandardMaterial({ map: src.map, normalMap: src.normalMap, roughness: 0.6, metalness: 0.1, envMapIntensity: 0.5 });
+      addRim(m, "#8f86ff", 0.35, 3.2);
+      mesh.material = m;
       mesh.castShadow = true;
       mesh.frustumCulled = false;
     });
@@ -106,23 +98,23 @@ export function Hunter() {
 
   // world events → one-shot gestures
   useEffect(() => {
-    const oneShot = (clip: Clip, sound?: Parameters<typeof play>[0]) => {
+    const oneShot = (clip: Clip, { fade = 0.25, cut = 0.25 } = {}) => {
       const r = rig.current;
       const action = r?.actions[clip];
       if (!r || !action) return;
       action.reset().setLoop(LoopOnce, 1);
       action.clampWhenFinished = true;
-      r.actions[r.current]?.fadeOut(0.2);
-      action.fadeIn(0.2).play();
+      action.timeScale = 1;
+      r.actions[r.current]?.fadeOut(fade);
+      action.fadeIn(fade).play();
       r.current = clip;
-      r.busyUntil = performance.now() + action.getClip().duration * 1000 - 200;
-      if (sound) play(sound);
+      r.busyUntil = performance.now() + (action.getClip().duration - cut) * 1000;
     };
     return useWorldStore.subscribe((s, prev) => {
-      if (s.rising && !prev.rising) oneShot("Spellcast_Raise");
-      if (s.panel && s.panel !== prev.panel) oneShot("Interact");
-      if (s.levelUp && s.levelUp !== prev.levelUp) oneShot("Cheer");
-      if (s.warp.n !== prev.warp.n) oneShot("Jump_Full_Short");
+      if (s.rising && !prev.rising) oneShot("Cast2H");
+      if (s.panel && s.panel !== prev.panel) oneShot("Cast1H", { fade: 0.2, cut: 0.9 });
+      if (s.levelUp && s.levelUp !== prev.levelUp) oneShot("Area");
+      if (s.warp.n !== prev.warp.n) oneShot("Jump", { fade: 0.1, cut: 0.6 });
     });
   }, []);
 
@@ -138,7 +130,7 @@ export function Hunter() {
     if (s.warp.n !== warpSeen.current) {
       warpSeen.current = s.warp.n;
       if (s.warp.n > 0) {
-        g.position.set(s.warp.to[0], 0, s.warp.to[1]);
+        g.position.set(s.warp.to[0], floorAt(s.warp.to[0], s.warp.to[1]), s.warp.to[1]);
         flashT.current = 0;
         play("portal");
         kickAberration(1.2);
@@ -169,14 +161,14 @@ export function Hunter() {
       const tx = s.target[0] - g.position.x;
       const tz = s.target[1] - g.position.z;
       const dist = Math.hypot(tx, tz);
-      if (dist < 0.3) {
+      if (dist < 0.25) {
         s.clearTarget();
       } else {
         dx = tx / dist;
         dz = tz / dist;
-        run = run || dist > 7 || s.pending !== null;
+        run = run || dist > 6 || s.pending !== null;
         // ease in to the stop so the Hunter doesn't skid past the mark
-        const ease = Math.min(1, dist / 1.2);
+        const ease = Math.min(1, dist / 1.1);
         dx *= ease;
         dz *= ease;
       }
@@ -184,66 +176,69 @@ export function Hunter() {
 
     const mag = Math.hypot(dx, dz);
     const topSpeed = run ? world.runSpeed : world.walkSpeed;
-    speed.current += (mag * topSpeed - speed.current) * Math.min(1, delta * 8);
+    speed.current += (mag * topSpeed - speed.current) * Math.min(1, delta * 7);
 
     if (mag > 0.01) {
       const nx = dx / mag;
       const nz = dz / mag;
-      let px = g.position.x + nx * speed.current * delta;
-      let pz = g.position.z + nz * speed.current * delta;
-      // slide around landmarks
-      for (const c of colliders) {
-        const ox = px - c.x;
-        const oz = pz - c.z;
-        const d = Math.hypot(ox, oz);
-        const min = c.r + BODY_RADIUS;
-        if (d < min && d > 0.0001) {
-          px = c.x + (ox / d) * min;
-          pz = c.z + (oz / d) * min;
-        }
-      }
-      // stay on the island
-      const rr = Math.hypot(px, pz);
-      const edge = world.islandRadius - 1.6;
-      if (rr > edge) {
-        px *= edge / rr;
-        pz *= edge / rr;
-      }
+      // the still-fallen knights block the way until they rise
+      const extra: Circle[] = [];
+      quests.forEach((q, i) => {
+        if (!s.risen.includes(q.id) && s.rising !== q.id) extra.push(graveColliders[i % graveColliders.length]);
+      });
+      const [px, pz] = resolveMove(
+        g.position.x + nx * speed.current * delta,
+        g.position.z + nz * speed.current * delta,
+        BODY_RADIUS,
+        extra,
+      );
       const moved = Math.hypot(px - g.position.x, pz - g.position.z);
       g.position.x = px;
       g.position.z = pz;
       const heading = Math.atan2(nx, nz);
-      g.rotation.y += shortestAngle(g.rotation.y, heading) * Math.min(1, delta * 12);
+      g.rotation.y += shortestAngle(g.rotation.y, heading) * Math.min(1, delta * 10);
 
       stepAcc.current += moved;
-      if (stepAcc.current > STEP_EVERY * (run ? 1.25 : 0.85)) {
+      if (stepAcc.current > STEP_EVERY * (run ? 1.3 : 0.8)) {
         stepAcc.current = 0;
         footstep();
       }
     }
+    // follow the floor (sunken nave floors, dais steps)
+    const fy = floorAt(g.position.x, g.position.z, g.position.y + 1);
+    g.position.y += (fy - g.position.y) * Math.min(1, delta * 12);
 
-    // ── locomotion clips (one-shots own the rig until they finish) ──
+    // ── locomotion (one-shots own the rig until they finish) ──
     if (!busy) {
-      const want: Clip =
-        speed.current > world.walkSpeed * 1.08
-          ? "Running_A"
-          : speed.current > 0.35
-            ? "Walking_A"
-            : "Idle";
+      const v = speed.current;
+      let want: Clip = v > world.walkSpeed * 1.15 ? "Run" : v > 0.3 ? "Walk" : "Idle";
+      idleFor.current = want === "Idle" ? idleFor.current + delta : 0;
+      if (want === "Idle" && idleFor.current > FIDGET_AFTER) {
+        want = "Idle2";
+        const fidget = r.actions.Idle2;
+        if (fidget && r.current === "Idle2" && fidget.time > fidget.getClip().duration - 0.4) idleFor.current = 0;
+      }
       if (want !== r.current) {
-        r.actions[r.current]?.fadeOut(0.18);
-        r.actions[want]?.reset().fadeIn(0.18).play();
+        const next = r.actions[want];
+        r.actions[r.current]?.fadeOut(0.22);
+        next?.reset().setLoop(want === "Idle2" ? LoopOnce : LoopRepeat, Infinity);
+        if (next) next.clampWhenFinished = want === "Idle2";
+        next?.fadeIn(0.22).play();
         r.current = want;
+      }
+      const action = r.actions[r.current];
+      if (action && (r.current === "Walk" || r.current === "Run")) {
+        action.timeScale = Math.min(1.6, Math.max(0.6, v / NATURAL[r.current]));
       }
     }
     r.mixer.update(delta);
 
-    // ── proximity: which zone is the Hunter standing in ──
+    // ── proximity: which station is the Hunter standing at ──
     let near: (typeof zones)[number]["id"] | null = null;
     let best = Infinity;
     for (const z of zones) {
       const d = Math.hypot(g.position.x - z.position[0], g.position.z - z.position[1]);
-      if (d < z.radius + 2.2 && d < best) {
+      if (d < z.radius && d < best) {
         best = d;
         near = z.id;
       }
@@ -253,7 +248,7 @@ export function Hunter() {
     live.hunter.x = g.position.x;
     live.hunter.z = g.position.z;
     live.hunter.heading = g.rotation.y;
-    live.moving = speed.current > 0.35;
+    live.moving = speed.current > 0.3;
 
     // warp burst: an expanding, fading ring of shadow
     if (flash.current) {
@@ -268,13 +263,8 @@ export function Hunter() {
   return (
     <group ref={group} position={[world.spawn[0], 0, world.spawn[1]]} rotation={[0, Math.PI, 0]}>
       <primitive object={model} scale={SUNG_SCALE} />
-      {/* the Monarch's aura: rising motes + a lantern so he reads at night */}
-      <Sparkles count={24} scale={[1.6, 2.6, 1.6]} position={[0, 1.2, 0]} size={2.4} speed={0.6} color={COLORS.arcaneHot} opacity={0.8} />
-      <pointLight color={COLORS.arcane} intensity={9} distance={7} decay={1.6} position={[0, 2.6, 0.6]} />
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]}>
-        <circleGeometry args={[0.9, 32]} />
-        <meshBasicMaterial color={COLORS.void} transparent opacity={0.55} depthWrite={false} />
-      </mesh>
+      {/* the Monarch's lantern: a faint cold key so he reads in the dark */}
+      <pointLight color={COLORS.arcaneHot} intensity={2.2} distance={5} decay={1.8} position={[0, 2.8, 1.2]} />
       <group ref={flash} visible={false}>
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]}>
           <ringGeometry args={[0.8, 1, 48]} />

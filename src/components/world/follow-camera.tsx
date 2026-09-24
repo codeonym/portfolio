@@ -3,8 +3,8 @@
 import { useEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Vector2, Vector3, type PerspectiveCamera } from "three";
-import { zoneById } from "@/config/world.config";
 import { live, useWorldStore } from "@/store/world-store";
+import { hallHalfWidth, shots } from "./layout";
 
 /** transient camera effects, decaying on their own — kicked by big moments */
 const fx = { shake: 0, aberration: 0 };
@@ -18,24 +18,28 @@ export function kickAberration(amount = 1) {
   fx.aberration = Math.min(2, fx.aberration + amount);
 }
 
-const MIN_DIST = 7;
-const MAX_DIST = 22;
+const MIN_DIST = 4.5;
+const MAX_DIST = 13;
+/** the camera stays under the vault and inside the walls */
+const CEILING = 13;
+const WALL_MARGIN = 0.8;
 
 /**
  * Third-person camera with three moods:
- *  · title   — a slow high orbit around the island (attract mode)
- *  · explore — damped follow behind the Hunter; drag orbits, wheel zooms
- *  · focus   — a zone panel is open: frame its landmark, shifted clear
- *              of the panel with a view offset (right on desktop, below
- *              on touch, where the panel is a bottom sheet)
+ *  · title   — a slow push down the nave toward THE SYSTEM (attract mode)
+ *  · explore — damped follow behind the Hunter; drag orbits, wheel zooms;
+ *              never leaves the hall
+ *  · focus   — a station's panel is open: its composed shot (layout.ts),
+ *              shifted clear of the panel with a view offset (right on
+ *              desktop, below on touch, where the panel is a bottom sheet)
  */
 export function FollowCamera() {
   const gl = useThree((s) => s.gl);
   const size = useThree((s) => s.size);
 
   const yaw = useRef(0);
-  const pitch = useRef(0.5);
-  const dist = useRef(13);
+  const pitch = useRef(0.36);
+  const dist = useRef(8.5);
   const look = useRef(new Vector3(0, 1.5, 0));
   const desired = useRef(new Vector3());
   const desiredLook = useRef(new Vector3());
@@ -58,7 +62,7 @@ export function FollowCamera() {
       if (!dragging && Math.hypot(dx, dy) > 6) dragging = true;
       if (!dragging) return;
       yaw.current -= e.movementX * 0.0055;
-      pitch.current = Math.min(1.15, Math.max(0.18, pitch.current + e.movementY * 0.004));
+      pitch.current = Math.min(1.05, Math.max(0.08, pitch.current + e.movementY * 0.004));
     };
     const onUp = () => {
       down = null;
@@ -93,28 +97,16 @@ export function FollowCamera() {
     let wantOffset = { x: 0, y: 0 };
 
     if (phase !== "world") {
-      // attract mode: a lazy high orbit, the Gate always drifting through frame
-      const a = t * 0.05 + 0.6;
-      desired.current.set(Math.sin(a) * 46, 24 + Math.sin(t * 0.2) * 3, Math.cos(a) * 46);
-      desiredLook.current.set(0, -2, -4);
-      damp = 1.2;
+      // attract mode: drifting up the nave between the kneeling knights, the Wraith ahead
+      const a = t * 0.045;
+      desired.current.set(Math.sin(a * 2.3) * 2.2, 3.4 + Math.sin(a * 1.7) * 0.8, 20 - (Math.sin(a) * 0.5 + 0.5) * 9);
+      desiredLook.current.set(0, 5.6, -11);
+      damp = 0.9;
     } else if (focus) {
-      const zone = zoneById[focus];
-      const [zx, zz] = zone.position;
-      const len = Math.hypot(zx, zz);
-      // stand between the landmark and the island center, a little above
-      let ux = len < 1 ? 0 : -zx / len;
-      let uz = len < 1 ? 1 : -zz / len;
-      // swing ~35° off the approach axis so the Hunter (standing on it)
-      // frames the landmark from the side instead of blocking it
-      const swing = 0.6;
-      const c = Math.cos(swing);
-      const sn = Math.sin(swing);
-      [ux, uz] = [ux * c - uz * sn, ux * sn + uz * c];
+      const shot = shots[focus];
       const talking = !panel;
-      const back = zone.radius + (focus === "gate" ? 12 : talking ? 6.5 : 8.5);
-      desired.current.set(zx + ux * back, talking ? 6 : 7.5, zz + uz * back);
-      desiredLook.current.set(zx, focus === "gate" ? 5.5 : talking ? 4.2 : 2, zz);
+      desired.current.set(...shot.pos);
+      desiredLook.current.set(...shot.look);
       // the zone panel sits right, the dialogue left (desktop); both are bottom sheets on touch
       wantOffset = touch ? { x: 0, y: size.height * 0.22 } : { x: size.width * (talking ? -0.17 : 0.2), y: 0 };
       damp = 2.4;
@@ -124,11 +116,19 @@ export function FollowCamera() {
       const p = pitch.current;
       desired.current.set(
         h.x + Math.sin(yaw.current) * Math.cos(p) * d,
-        1.6 + Math.sin(p) * d,
+        1.7 + Math.sin(p) * d,
         h.z + Math.cos(yaw.current) * Math.cos(p) * d,
       );
-      desiredLook.current.set(h.x, 1.6, h.z);
+      desiredLook.current.set(h.x, 1.7, h.z);
       damp = 4.5;
+    }
+    // stay inside the temple: under the vault, off the walls
+    if (phase === "world") {
+      const c = desired.current;
+      c.z = Math.min(29, Math.max(-19, c.z));
+      const hw = hallHalfWidth(c.z) - WALL_MARGIN;
+      c.x = Math.min(hw, Math.max(-hw, c.x));
+      c.y = Math.min(CEILING, Math.max(0.8, c.y));
     }
 
     const k = 1 - Math.exp(-delta * damp);

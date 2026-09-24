@@ -180,7 +180,7 @@ export interface SystemScreenCopy {
 
 /* ─────────────────────────── V5 · THE WORLD ─────────────────────────── */
 
-/** every explorable zone on the island — each one opens its own panel */
+/** every explorable zone in the temple — each one opens its own panel */
 export type ZoneId =
   | "awakening"
   | "guild"
@@ -204,7 +204,9 @@ export interface ZoneDef {
   tone: Tone;
   /** world position of the landmark center, [x, z] */
   position: [number, number];
-  /** walk within this radius to get the interaction prompt */
+  /** where the Hunter stands to use it (walk-to target), [x, z] */
+  approach: [number, number];
+  /** walk within this radius of `position` to get the interaction prompt */
   radius: number;
   /** verb on the interaction prompt: "[E] <verb> <name>" */
   verb: string;

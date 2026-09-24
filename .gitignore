@@ -51,3 +51,6 @@ imots/
 
 # local downloads / scratch
 /tmp/
+
+# python
+__pycache__/

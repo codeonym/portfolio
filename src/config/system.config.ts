@@ -86,6 +86,6 @@ export const systemConfig: SystemConfig = {
     title: "THIS GATE LEADS NOWHERE",
     body: "The coordinates you followed don't resolve to a sector within the System. It may have been sealed or never existed.",
     footer: "[ NAVIGATION FAILED · NO ACTIVE GATE ]",
-    cta: "RETURN TO THE ISLAND",
+    cta: "RETURN TO THE TEMPLE",
   },
 };

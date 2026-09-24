@@ -1,14 +1,16 @@
 /**
- * Packs the Sketchfab downloads for the web (credits in README.md):
- *   sung.glb     — Sung Jin-Woo, the Player (after retarget.py baked the clips)
- *   igris.glb    — Igris, the shadow soldiers
+ * Packs the scene's downloads for the web (credits in README.md):
+ *   hall.glb     — the temple (Sketchfab "Throne Room", trimmed by hall.py)
+ *   sung.glb     — Sung Jin-Woo, the Player (Mixamo clips baked by retarget.py)
+ *   knight.glb   — the shadow knights (Mixamo Paladin + Igris's sword & plume, knight.py)
  *   wraith.glb   — the Shadow Wraith, THE SYSTEM's body
- *   throne.glb · gargoyle.glb · brazier.glb · angel.glb — dungeon props
+ *   lectern.glb · chest.glb · coins.glb · sword.glb — station props
  *
  * Drops Sketchfab's wrapper hierarchy, re-encodes oversized PNG textures as
- * JPEG (ImageMagick), welds and draco-compresses.
+ * JPEG (ImageMagick), strips specular extensions, welds and draco-compresses.
  *
  *   IN_DIR=<sources> OUT_DIR=<repo>/public/models/world node pack-sketchfab.mjs
+ *   ONLY=sword.glb,hall.glb …   repacks just those outputs
  *
  * IN_DIR holds the downloads under the input names listed at the bottom.
  */
@@ -17,12 +19,13 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { NodeIO } from "@gltf-transform/core";
-import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
+import { ALL_EXTENSIONS, KHRMaterialsSpecular } from "@gltf-transform/extensions";
 import { dedup, draco, flatten, prune, weld } from "@gltf-transform/functions";
 import draco3d from "draco3dgltf";
 
 const IN = process.env.IN_DIR ?? ".";
 const OUT = process.env.OUT_DIR ?? ".";
+const ONLY = process.env.ONLY?.split(",");
 
 const io = new NodeIO()
   .registerExtensions(ALL_EXTENSIONS)
@@ -47,8 +50,11 @@ function shrinkTextures(doc, { maxKB = 200, size = 1024 }) {
 }
 
 async function pack(input, output, { skinned = false, size = 1024 } = {}) {
+  if (ONLY && !ONLY.includes(output)) return;
   const doc = await io.read(join(IN, input));
-  shrinkTextures(doc, { size });
+  // specular maps barely register under this lighting; not worth the bytes
+  doc.getRoot().listExtensionsUsed().filter((e) => e.extensionName === KHRMaterialsSpecular.EXTENSION_NAME).forEach((e) => e.dispose());
+  shrinkTextures(doc, { maxKB: 64, size });
   // flatten would detach joints from their skeleton — static meshes only
   if (!skinned) await doc.transform(flatten());
   await doc.transform(
@@ -62,10 +68,12 @@ async function pack(input, output, { skinned = false, size = 1024 } = {}) {
   console.log(`  ${output.padEnd(12)} ${(bytes.byteLength / 1024) | 0} KB`);
 }
 
-await pack("sung-anim.glb", "sung.glb", { skinned: true });
-await pack("igris_solo_leveling.glb", "igris.glb");
+await pack("hall.glb", "hall.glb", { size: 1024 });
+await pack("sung-mx.glb", "sung.glb", { skinned: true });
+await pack("knight.glb", "knight.glb", { skinned: true });
 await pack("death_star_asuirila_shadow_wraith.glb", "wraith.glb");
-await pack("throne.glb", "throne.glb");
-await pack("gargoyle.glb", "gargoyle.glb", { size: 512 });
-await pack("brazier.glb", "brazier.glb", { size: 512 });
-await pack("angel.glb", "angel.glb", { size: 512 });
+await pack("stone_book_lectern.glb", "lectern.glb", { size: 512 });
+await pack("old_roman_style_treasure_chest_animated.glb", "chest.glb", { skinned: true, size: 512 });
+await pack("pile_of_coins_3.glb", "coins.glb", { size: 512 });
+// stood upright, point down, by scripts/assets/orient.py first
+await pack("sword_of_the_defeated.glb", "sword.glb", { size: 512 });

@@ -10,12 +10,13 @@ import type { VisitorQuest, ZoneDef, ZoneId } from "./types";
 
 /**
  * ── THE WORLD ─────────────────────────────────────────────────
- * The island the Hunter walks. Each zone is a landmark that opens
- * one section of the portfolio. Positions are world units ([x, z]):
- * the island is a disc of radius `world.islandRadius`, the Hunter is
- * ~2.2 units tall, and -z is "north" (away from the spawn camera).
+ * The Double Dungeon: one temple hall the Hunter walks, from the Shadow
+ * Gate at the south door up the nave to THE SYSTEM's throne. Each zone
+ * is a station in the hall that opens one section of the portfolio.
+ * Positions are world units ([x, z]): the hall spans `world.hall`, the
+ * Hunter is ~2.2 units tall, and -z is "north" (toward the throne).
  *
- * Moving a zone moves its landmark, marker, minimap pin and trigger.
+ * Moving a zone moves its station, marker, minimap pin and trigger.
  */
 export const zones: ZoneDef[] = [
   {
@@ -25,11 +26,12 @@ export const zones: ZoneDef[] = [
     epithet: "where the Player first heard the System",
     icon: Gauge,
     tone: "system",
-    position: [0, -2],
-    radius: 5.5,
+    position: [0, -8.8],
+    approach: [0, -4.4],
+    radius: 4.6,
     verb: "Read",
     description:
-      "Center of the island. Player identity: name, job, rank, level, titles, core stats, profile, creed and languages.",
+      "The throne at the head of the hall. Player identity: name, job, rank, level, titles, core stats, profile, creed and languages.",
   },
   {
     id: "guild",
@@ -38,8 +40,9 @@ export const zones: ZoneDef[] = [
     epithet: "every contract the Player has signed",
     icon: Landmark,
     tone: "gold",
-    position: [-17, -11],
-    radius: 6.5,
+    position: [6.4, 24.4],
+    approach: [4.4, 23.2],
+    radius: 2.6,
     verb: "Enter",
     description:
       "Work experience timeline (OpenSNZ-Technology engagements) and education/achievements.",
@@ -51,8 +54,9 @@ export const zones: ZoneDef[] = [
     epithet: "fallen quests, waiting for a command",
     icon: Skull,
     tone: "arcane",
-    position: [17, -11],
-    radius: 7.5,
+    position: [0, 11.5],
+    approach: [0, 11.5],
+    radius: 6,
     verb: "Descend into",
     description:
       "Projects, framed as fallen soldiers. Each fallen knight is one quest (project); commanding ARISE extracts it as a shadow and reveals the project details.",
@@ -64,8 +68,9 @@ export const zones: ZoneDef[] = [
     epithet: "the arsenal of a job-class awakened",
     icon: Swords,
     tone: "ember",
-    position: [-16, 11],
-    radius: 6.5,
+    position: [-6.3, -2.6],
+    approach: [-4.3, -1.8],
+    radius: 2.6,
     verb: "Enter",
     description:
       "The skill tree: job skills (AI, agent stack, languages, web, databases, ops) and secondary skills (languages spoken, soft skills, pursuits), each with a mastery grade.",
@@ -77,8 +82,9 @@ export const zones: ZoneDef[] = [
     epithet: "relics, credentials, and the Hunter's License",
     icon: Backpack,
     tone: "gold",
-    position: [16, 11],
-    radius: 6,
+    position: [-6.2, 24.4],
+    approach: [-4.3, 23.2],
+    radius: 2.6,
     verb: "Open",
     description:
       "Possessions: artifacts (the Hunter's License holds the full CV), credentials (degrees) and curios.",
@@ -90,8 +96,9 @@ export const zones: ZoneDef[] = [
     epithet: "step through to reach the Player",
     icon: DoorOpen,
     tone: "arcane",
-    position: [0, -25],
-    radius: 7,
+    position: [0, 28.4],
+    approach: [0, 25.6],
+    radius: 3,
     verb: "Approach",
     description:
       "Contact channels — GitHub, LinkedIn and email. How to reach the Player and form a party.",
@@ -120,7 +127,7 @@ export const visitorQuests: VisitorQuest[] = [
   {
     id: "explore",
     name: "Cartographer",
-    objective: "Discover every zone on the island",
+    objective: "Discover every station in the temple",
     xp: 300,
   },
   {
@@ -147,30 +154,31 @@ export const visitorQuests: VisitorQuest[] = [
 export const xpPerLevel = 250;
 
 export const world = {
-  islandRadius: 31,
-  /** where the Hunter materializes, [x, z] */
-  spawn: [0, 12] as [number, number],
+  /** the walkable floor of the hall (world units): |x| ≤ halfWidth, north ≤ z ≤ south */
+  hall: { halfWidth: 8.1, north: -19.4, south: 27.2 },
+  /** where the Hunter steps out of the Gate, [x, z] */
+  spawn: [0, 21.6] as [number, number],
   /** walking / running speeds in units per second */
-  walkSpeed: 4.2,
-  runSpeed: 8.5,
+  walkSpeed: 2.4,
+  runSpeed: 6,
 
   loading: {
     heading: "SYSTEM",
     lines: [
       "Scanning for a compatible vessel…",
       "Tearing open a Gate…",
-      "Raising the island from the void…",
-      "Waking the fallen…",
+      "Unsealing the Double Dungeon…",
+      "Kneeling the fallen knights…",
       "Lighting the torches…",
       "Syncing the Player record…",
     ],
     tips: [
       "Click anywhere on the ground to walk there. Hold SHIFT to run.",
       "WASD or the arrow keys move the Hunter. Drag to turn the camera.",
-      "Every fallen knight in the Shadow Crypt is a project. Command it to ARISE.",
+      "Every kneeling knight in the nave is a project. Command it to ARISE.",
       "Risen shadows follow the Hunter everywhere.",
-      "Press M to open the world map and fast-travel to any zone.",
-      "The giant wraith at the center is THE SYSTEM. Press T and ask it anything — it can open any window for you.",
+      "Press M to open the temple map and fast-travel to any station.",
+      "The giant wraith above the throne is THE SYSTEM. Press T and ask it anything — it can open any window for you.",
     ],
   },
 
@@ -189,8 +197,8 @@ export const world = {
     visitorLabel: "VISITOR",
     syncLabel: "SYNC",
     questsLabel: "SYSTEM QUESTS",
-    mapLabel: "WORLD MAP",
-    mapHint: "select a zone to fast-travel",
+    mapLabel: "TEMPLE MAP",
+    mapHint: "select a station to fast-travel",
     promptKey: "E",
     tapPrompt: "TAP",
     arise: "ARISE",
@@ -217,7 +225,7 @@ export const world = {
     promptVerb: "Speak with",
     promptKey: "T",
     greeting:
-      "[ You have been noticed, Hunter. ] Ask me anything about the Player — or tell me what to show you. I can open any System window, raise the fallen, and bend this island to your request.",
+      "[ You have been noticed, Hunter. ] Ask me anything about the Player — or tell me what to show you. I can open any System window, raise the fallen, and bend this temple to your request.",
     placeholder: "Speak to the System…",
     thinking: "The System is processing…",
     suggestions: [
@@ -232,5 +240,5 @@ export const world = {
   },
 
   credits:
-    "Sung Jin-Woo by bgang0892 (Sketchfab Standard) · Igris by missafe · Shadow Wraith by patromes · Throne by Matt LeMoine · Gargoyle by adamvfc · Brazier by Sky_Hunter · Angel by SebastianSosnowski (Sketchfab, CC BY 4.0) · Models: KayKit by Kay Lousberg (CC0) · HDRI & textures: Poly Haven (CC0) · Sounds: Kenney (CC0)",
+    "Temple: Throne Room by Uğur Yakışık · Sung Jin-Woo by bgang0892 (Sketchfab Standard) · Igris's sword & plume by missafe · Shadow Wraith by patromes · Lectern by ambrosia04 · Chest by Theo Kain · Coins by SebastianSosnowski · Sword of the Defeated by Bunny-HungTD (Sketchfab, CC BY 4.0) · Knights & motion capture: Mixamo · Sounds: Kenney (CC0)",
 };

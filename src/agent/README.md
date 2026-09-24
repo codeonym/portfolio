@@ -1,6 +1,6 @@
 # THE SYSTEM — the portfolio's agent
 
-The giant Shadow Wraith above the Awakening Circle is a LangChain agent. Visitors talk to
+The giant Shadow Wraith behind the throne is a LangChain agent. Visitors talk to
 it (walk up and press **T**, or use the **SYSTEM** button), and it answers from
 the Player's record and drives the world: it opens windows, inspects entities,
 raises shadows, pushes notifications and casts effects.
