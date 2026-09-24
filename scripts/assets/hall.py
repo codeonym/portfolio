@@ -1,4 +1,4 @@
-# throne_room.glb -> hall.glb: drop the feast, scale to world units (Hunter = 2.2), floor at 0
+# throne_room.glb -> hall.glb: drop the feast and the crosses, scale to world units (Hunter = 2.2), floor at 0
 import sys
 try:
     import numpy
@@ -13,7 +13,8 @@ bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.gltf(filepath=D + "throne_room.glb")
 sc = bpy.context.scene
 for o in list(sc.objects):
-    if o.type == "MESH" and any(k in o.name for k in ("Table", "Chair", "Cup", "Wine", "Candle")):
+    # the feast, and the standing crosses (Effigy_02) — replaced in-app by shadow crystals
+    if o.type == "MESH" and any(k in o.name for k in ("Table", "Chair", "Cup", "Wine", "Candle", "Effigy_02")):
         bpy.data.objects.remove(o)
 bpy.context.view_layer.update()
 meshes = [o for o in sc.objects if o.type == "MESH"]
