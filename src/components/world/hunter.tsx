@@ -19,7 +19,7 @@ import { ASSETS, COLORS } from "./assets";
 import { colliders } from "./colliders";
 import { kickAberration } from "./follow-camera";
 
-useGLTF.preload(ASSETS.hunter, ASSETS.draco);
+useGLTF.preload(ASSETS.sung, ASSETS.draco);
 
 type Clip =
   | "Idle"
@@ -41,6 +41,8 @@ interface Rig {
 }
 
 const BODY_RADIUS = 0.6;
+/** Sung is modelled at 1.87 m; the world is scaled for a ~2.2-unit Hunter */
+const SUNG_SCALE = 1.18;
 const STEP_EVERY = 1.55;
 
 function shortestAngle(from: number, to: number) {
@@ -51,10 +53,12 @@ function shortestAngle(from: number, to: number) {
 }
 
 /**
- * The Hunter — a hooded shadow rogue (KayKit, CC0) the visitor steers.
- * Click-to-move, WASD/joystick relative to the camera, circle colliders,
- * and a small animation state machine with one-shot reactions to world
- * events (ARISE → raise spell, opening a zone → interact, level up → cheer).
+ * The Hunter — Sung Jin-Woo, the Shadow Monarch, steered by the visitor.
+ * His rig carries the KayKit Hunter's clips, retargeted offline
+ * (scripts/assets/retarget.py). Click-to-move, WASD/joystick relative to
+ * the camera, circle colliders, and a small animation state machine with
+ * one-shot reactions to world events (ARISE → raise spell, opening a zone
+ * → interact, level up → cheer).
  */
 export function Hunter() {
   const group = useRef<Group>(null);
@@ -65,9 +69,10 @@ export function Hunter() {
   const warpSeen = useRef(0);
   const flashT = useRef(1);
 
-  const { scene, animations } = useGLTF(ASSETS.hunter, ASSETS.draco);
+  const { scene, animations } = useGLTF(ASSETS.sung, ASSETS.draco);
 
-  // shadow-monarch treatment: the atlas pulled toward violet with a faint inner glow
+  // night pass: keep his textures, lift them a touch and add a violet
+  // undertone so the black outfit still reads against the dark island
   const model = useMemo(() => {
     scene.traverse((node) => {
       const mesh = node as Mesh;
@@ -75,11 +80,11 @@ export function Hunter() {
       const src = mesh.material as MeshStandardMaterial;
       mesh.material = new MeshStandardMaterial({
         map: src.map,
-        color: new Color("#8a80b8"),
-        roughness: 0.7,
-        metalness: 0.15,
-        emissive: new Color("#2a1560"),
-        emissiveIntensity: 0.55,
+        color: new Color("#c9c3e6"),
+        roughness: 0.62,
+        metalness: 0.1,
+        emissive: new Color("#1d1040"),
+        emissiveIntensity: 0.7,
       });
       mesh.castShadow = true;
       mesh.frustumCulled = false;
@@ -262,7 +267,7 @@ export function Hunter() {
 
   return (
     <group ref={group} position={[world.spawn[0], 0, world.spawn[1]]} rotation={[0, Math.PI, 0]}>
-      <primitive object={model} />
+      <primitive object={model} scale={SUNG_SCALE} />
       {/* the Monarch's aura: rising motes + a lantern so he reads at night */}
       <Sparkles count={24} scale={[1.6, 2.6, 1.6]} position={[0, 1.2, 0]} size={2.4} speed={0.6} color={COLORS.arcaneHot} opacity={0.8} />
       <pointLight color={COLORS.arcane} intensity={9} distance={7} decay={1.6} position={[0, 2.6, 0.6]} />

@@ -11,7 +11,7 @@ import { play } from "@/lib/audio";
 import { useWorldStore } from "@/store/world-store";
 import { COLORS, createGlowMaterial, createPortalMaterial, forgedMaterials, toneColor } from "../assets";
 import { zoneYaw } from "../colliders";
-import { Forged, Kit, useForged } from "../models";
+import { Forged, Kit, Prop, useForged } from "../models";
 
 /** places children in a zone's local frame: origin at the zone, +z facing the island center */
 function ZoneFrame({ zone, children }: { zone: ZoneId; children: ReactNode }) {
@@ -133,7 +133,9 @@ export function CryptSet() {
         <Floor cols={[-4, 0, 4]} rows={[2]} />
         <Kit name="pillar_decorated" position={[-5.5, 0, -4.5]} />
         <Kit name="pillar_decorated" position={[5.5, 0, -4.5]} />
-        <Kit name="rubble_large" position={[0, 0, -6.5]} />
+        {/* the Shadow Monarch's throne, waiting at the head of the crypt */}
+        <Prop name="throne" height={3.8} position={[0, 0, -6.4]} />
+        <Kit name="rubble_large" position={[-2.6, 0, -6.8]} scale={0.6} />
         <Kit name="wall_broken" position={[-4.8, 0, -6.2]} rotation={0.3} />
         <Kit name="wall_cracked" position={[4.8, 0, -6.2]} rotation={-0.3} />
         {[
@@ -291,6 +293,8 @@ export function ShadowGate() {
     <ZoneFrame zone="gate">
       <group onClick={onClick}>
         <Forged name="gate" />
+        <Prop name="gargoyle" height={2.6} position={[-6.3, 0, 3.4]} rotation={0.25} />
+        <Prop name="gargoyle" height={2.6} position={[6.3, 0, 3.4]} rotation={-0.25} />
         <group ref={rift}>{portal && <primitive object={portal} />}</group>
       </group>
       <Sparkles count={90} scale={[10, 13, 4]} position={[0, 7.4, 1]} size={4} speed={0.8} color={COLORS.arcaneHot} />

@@ -38,7 +38,7 @@ export const live = {
   input: { x: 0, z: 0, run: false },
   /** camera yaw (radians) — movement input is relative to it */
   cameraYaw: 0,
-  /** THE SYSTEM is generating — the hologram reads this every frame */
+  /** THE SYSTEM is generating — its wraith reads this every frame */
   agentBusy: false,
 };
 

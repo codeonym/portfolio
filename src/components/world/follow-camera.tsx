@@ -86,7 +86,7 @@ export function FollowCamera() {
     const clock = state.clock;
     const delta = Math.min(rawDelta, 0.05);
     const { phase, panel, touch, dialogueOpen, nearZone } = useWorldStore.getState();
-    // speaking with THE SYSTEM at its hologram: frame it beside the dialogue
+    // speaking with THE SYSTEM at its wraith: frame it beside the dialogue
     const focus = panel ?? (dialogueOpen && nearZone === "awakening" ? "awakening" : null);
     const t = clock.elapsedTime;
     let damp = 3.2;

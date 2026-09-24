@@ -7,7 +7,7 @@ portfolio without touching a single component.
 | --------------------- | ----------------------------------------------------------------------- |
 | `world.config.ts`     | The island: zone layout/names/sections, visitor quests + XP, HUD copy, loading tips, title screen, credits |
 | `player.config.ts`    | Identity, level, rank, titles, stats, links, languages, profile, creed  |
-| `quests.config.ts`    | Projects — each one is a fallen skeleton in the Shadow Crypt            |
+| `quests.config.ts`    | Projects — each one is a fallen knight (Igris) in the Shadow Crypt     |
 | `skills.config.ts`    | Skill sets, categories (job categories = Armory crystals), skills       |
 | `inventory.config.ts` | Treasury items, rarity tiers, lore; `unlocks` = `"cv"` or a zone id     |
 | `chronicle.config.ts` | Experience timeline and education (Guild Hall)                          |
@@ -19,7 +19,7 @@ portfolio without touching a single component.
 - Values are validated by the types in `types.ts` — if `pnpm build` passes,
   the UI cannot break from a config edit.
 - Stat/mastery values are `0–100`. Quest ranks are `"S" | "A" | "B"`
-  (S-rank quests rise as knights and mages, A as rogues, B as minions).
+  (shown on the crypt's ARISE tags; every quest rises as an Igris shadow).
   Rarity is `"legendary" | "epic" | "rare" | "common"`.
 - The crypt has six graves; more than six quests will share resting places.
 - Zone `position` is `[x, z]` in world units (island radius 31, -z is north).

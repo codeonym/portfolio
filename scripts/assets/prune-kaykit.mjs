@@ -61,27 +61,14 @@ async function character(file, keepAnims, dropMeshes, out) {
   console.log(out, kept);
 }
 
-// ── the Player: hooded rogue with twin daggers
+// ── the Hunter's clips: no longer shipped as a character — retarget.py bakes
+//    them onto Sung Jin-Woo (sung.glb); hunter.glb stays as its source
 await character(
   "Rogue_Hooded.glb",
   ["Idle", "Walking_A", "Running_A", "Spellcast_Long", "Spellcast_Raise", "Dualwield_Melee_Attack_Slice", "Cheer", "Interact", "Jump_Full_Short"],
   ["1H_Crossbow", "2H_Crossbow", "Throwable"],
   "hunter.glb",
 );
-
-// ── the fallen: skeletons that ARISE as shadow soldiers
-const skeletonAnims = [
-  "Skeletons_Inactive_Floor_Pose",
-  "Skeletons_Awaken_Floor_Long",
-  "Idle",
-  "Cheer",
-  "Taunt",
-  "Running_A",
-  "Walking_D_Skeletons",
-];
-for (const kind of ["Warrior", "Minion", "Mage", "Rogue"]) {
-  await character(`Skeleton_${kind}.glb`, skeletonAnims, [], `skeleton-${kind.toLowerCase()}.glb`);
-}
 
 // ── the dungeon kit: every piece as a named root node, one shared atlas
 const pieces = [

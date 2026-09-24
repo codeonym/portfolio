@@ -5,51 +5,40 @@ import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { Html, Sparkles, useGLTF } from "@react-three/drei";
 import {
   AdditiveBlending,
-  AnimationMixer,
+  Box3,
   Color,
-  LoopOnce,
   MeshBasicMaterial,
   MeshStandardMaterial,
-  type AnimationAction,
-  type AnimationClip,
+  Vector3,
   type Group,
   type Mesh,
   type Object3D,
 } from "three";
-import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { quests } from "@/config/quests.config";
 import type { Quest } from "@/config/types";
 import { world } from "@/config/world.config";
 import { duckMusic, play } from "@/lib/audio";
 import { cn } from "@/lib/utils";
 import { live, useWorldStore } from "@/store/world-store";
-import { ASSETS, COLORS, type SkeletonKind } from "./assets";
+import { ASSETS, COLORS, createGlowMaterial } from "./assets";
 import { zoneToWorld, zoneYaw } from "./colliders";
 import { addShake, kickAberration } from "./follow-camera";
 
-for (const url of Object.values(ASSETS.skeletons)) useGLTF.preload(url, ASSETS.draco);
-
-type Clip =
-  | "Skeletons_Inactive_Floor_Pose"
-  | "Skeletons_Awaken_Floor_Long"
-  | "Idle"
-  | "Cheer"
-  | "Taunt"
-  | "Running_A"
-  | "Walking_D_Skeletons";
+useGLTF.preload(ASSETS.igris, ASSETS.draco);
 
 type State = "fallen" | "rising" | "risen";
+/** the two materials each soldier mesh swaps between, kept on mesh.userData */
+type Looks = { stone: MeshStandardMaterial; shadow: MeshStandardMaterial };
 
-const BONE = new Color("#b9b3cc");
-const SHADOW = new Color("#141026");
+/** Igris towers a head over the Monarch */
+const IGRIS_HEIGHT = 2.7;
+/** the extraction: sink into the shadow, then rise from it */
+const SINK = 0.9;
+const RISE = 1.6;
+
+const STONE = new Color("#8d8a9c");
+const SHADOW = new Color("#5a5378");
 const GLOW = new Color(COLORS.arcane);
-
-/** rank decides the body: S-rank quests rise as knights and mages */
-function kindFor(quest: Quest, index: number): SkeletonKind {
-  if (quest.rank === "S") return index % 2 === 0 ? "warrior" : "mage";
-  if (quest.rank === "A") return "rogue";
-  return "minion";
-}
 
 /** crypt-local resting places: two rows between the pillars */
 const GRAVES: [number, number, number][] = [
@@ -65,26 +54,38 @@ const GRAVES: [number, number, number][] = [
 function slotOffset(slot: number): [number, number] {
   const rank = Math.floor(slot / 2) + 1;
   const side = slot % 2 === 0 ? -1 : 1;
-  return [side * 1.5 * rank, -1.9 * rank];
+  return [side * 1.8 * rank, -2.1 * rank];
 }
 
-interface Rig {
-  mixer: AnimationMixer;
-  actions: Partial<Record<Clip, AnimationAction>>;
-  current: Clip;
-  body: MeshStandardMaterial[];
-  eyes: MeshBasicMaterial[];
+function wrapAngle(d: number) {
+  d %= Math.PI * 2;
+  if (d > Math.PI) d -= Math.PI * 2;
+  if (d < -Math.PI) d += Math.PI * 2;
+  return d;
 }
 
-function Fallen({ quest, index }: { quest: Quest; index: number }) {
-  const kind = kindFor(quest, index);
-  const { scene, animations } = useGLTF(ASSETS.skeletons[kind], ASSETS.draco);
-  const clone = useMemo<Object3D>(() => cloneSkinned(scene), [scene]);
+/** scale + offset that stand Igris on the ground at IGRIS_HEIGHT, centered */
+function useIgrisFit(scene: Object3D) {
+  return useMemo(() => {
+    const box = new Box3().setFromObject(scene);
+    const size = box.getSize(new Vector3());
+    const center = box.getCenter(new Vector3());
+    const scale = IGRIS_HEIGHT / (size.y || 1);
+    return { scale, offset: [-center.x * scale, -box.min.y * scale, -center.z * scale] as [number, number, number] };
+  }, [scene]);
+}
+
+function Soldier({ quest, index }: { quest: Quest; index: number }) {
+  const { scene } = useGLTF(ASSETS.igris, ASSETS.draco);
+  const fit = useIgrisFit(scene);
   const holder = useRef<Group>(null);
+  const body = useRef<Group>(null);
   const burst = useRef<Group>(null);
-  const rig = useRef<Rig | null>(null);
+  /** 0 = stone, 1 = shadow */
   const progress = useRef(0);
+  const riseT = useRef(-1);
   const burstT = useRef(1);
+  const speed = useRef(0);
 
   const risen = useWorldStore((s) => s.risen.includes(quest.id));
   const rising = useWorldStore((s) => s.rising === quest.id);
@@ -101,71 +102,49 @@ function Fallen({ quest, index }: { quest: Quest; index: number }) {
     return { x, z, yaw: zoneYaw("crypt") + spin };
   }, [index]);
 
-  // build the rig + per-soldier materials once
-  useEffect(() => {
-    const body: MeshStandardMaterial[] = [];
-    const eyes: MeshBasicMaterial[] = [];
-    clone.traverse((node) => {
+  // one clone per soldier with two looks: an untextured stone statue while
+  // fallen, and the shadow knight (its own texture, seams burning violet) once risen
+  const clone = useMemo(() => {
+    const copy = scene.clone(true);
+    copy.traverse((node) => {
       const mesh = node as Mesh;
       if (!mesh.isMesh) return;
-      mesh.castShadow = true;
-      mesh.frustumCulled = false;
-      if (mesh.name.toLowerCase().includes("eyes")) {
-        const m = new MeshBasicMaterial({
-          color: GLOW.clone().multiplyScalar(3),
-          transparent: true,
-          opacity: 0,
-          blending: AdditiveBlending,
-          depthWrite: false,
-          toneMapped: false,
-        });
-        mesh.material = m;
-        eyes.push(m);
-        return;
-      }
       const src = mesh.material as MeshStandardMaterial;
-      const m = new MeshStandardMaterial({
+      const stone = new MeshStandardMaterial({ color: STONE, roughness: 0.95, metalness: 0, side: src.side });
+      const shadow = new MeshStandardMaterial({
         map: src.map,
-        color: BONE.clone(),
-        roughness: 0.75,
-        metalness: 0.1,
-        emissive: GLOW.clone(),
+        emissiveMap: src.map,
+        color: SHADOW,
+        roughness: 0.5,
+        metalness: 0.4,
+        emissive: GLOW,
         emissiveIntensity: 0,
+        side: src.side,
       });
-      mesh.material = m;
-      body.push(m);
+      mesh.castShadow = true;
+      mesh.material = stone;
+      mesh.userData.looks = { stone, shadow } satisfies Looks;
     });
-    const mixer = new AnimationMixer(clone);
-    const actions: Rig["actions"] = {};
-    for (const clip of animations as AnimationClip[]) actions[clip.name as Clip] = mixer.clipAction(clip);
-    const start: Clip = stateRef.current === "risen" ? "Idle" : "Skeletons_Inactive_Floor_Pose";
-    actions[start]?.play();
-    // stagger so the legion never breathes in unison
-    mixer.setTime(index * 0.37);
-    rig.current = { mixer, actions, current: start, body, eyes };
-    if (stateRef.current === "risen") progress.current = 1;
-    return () => {
-      mixer.stopAllAction();
-      rig.current = null;
-    };
-  }, [clone, animations, index]);
+    return copy;
+  }, [scene]);
+  const pool = useMemo(() => createGlowMaterial("#1a0f3a", 1.6), []);
 
-  // spawn position: in the grave, or already in formation after a reload
+  // spawn position: on its grave, or already in formation after a reload
   useEffect(() => {
     const h = holder.current;
     if (!h) return;
     if (stateRef.current === "risen") {
-      h.position.set(live.hunter.x + (index - 2.5) * 1.2, 0, live.hunter.z + 2.5);
+      progress.current = 1;
+      h.position.set(live.hunter.x + (index - 2.5) * 1.4, 0, live.hunter.z + 2.8);
     } else {
       h.position.set(grave.x, 0, grave.z);
       h.rotation.y = grave.yaw;
     }
   }, [grave, index]);
 
-  // the store says ARISE — play the awakening
+  // the store says ARISE — sink into the shadow and come back as one
   useEffect(() => {
-    const r = rig.current;
-    if (!rising || !r || stateRef.current !== "fallen") return;
+    if (!rising || stateRef.current !== "fallen") return;
     stateRef.current = "rising";
     setState("rising");
     play("arise");
@@ -173,52 +152,54 @@ function Fallen({ quest, index }: { quest: Quest; index: number }) {
     addShake(0.7);
     kickAberration(1.5);
     burstT.current = 0;
-    const awaken = r.actions.Skeletons_Awaken_Floor_Long;
-    if (!awaken) return;
-    r.actions[r.current]?.fadeOut(0.1);
-    awaken.reset().setLoop(LoopOnce, 1);
-    awaken.clampWhenFinished = true;
-    awaken.fadeIn(0.1).play();
-    r.current = "Skeletons_Awaken_Floor_Long";
-    const onDone = (e: { action: AnimationAction }) => {
-      if (e.action !== awaken) return;
-      r.mixer.removeEventListener("finished", onDone);
-      const cheer = r.actions.Taunt;
-      awaken.fadeOut(0.3);
-      cheer?.reset().setLoop(LoopOnce, 1);
-      if (cheer) {
-        cheer.clampWhenFinished = true;
-        cheer.fadeIn(0.3).play();
-        r.current = "Taunt";
-      }
-      stateRef.current = "risen";
-      setState("risen");
-      useWorldStore.getState().finishRising();
-    };
-    r.mixer.addEventListener("finished", onDone);
-    return () => r.mixer.removeEventListener("finished", onDone);
+    riseT.current = 0;
   }, [rising]);
 
   useFrame(({ clock }, raw) => {
-    const r = rig.current;
     const h = holder.current;
-    if (!r || !h) return;
+    const b = body.current;
+    if (!h || !b) return;
     const delta = Math.min(raw, 0.05);
+    const t = clock.elapsedTime;
     const st = stateRef.current;
 
-    // bone → shadow as the soldier rises
-    if (st !== "fallen" && progress.current < 1) {
-      progress.current = Math.min(1, progress.current + delta * 0.45);
+    // ── the extraction ──
+    if (st === "rising") {
+      riseT.current += delta;
+      const r = riseT.current;
+      if (r < SINK) {
+        const k = r / SINK;
+        b.position.y = -IGRIS_HEIGHT * 1.05 * k * k;
+        b.position.x = Math.sin(r * 60) * 0.03;
+      } else {
+        // below ground it has already become a shadow
+        progress.current = 1;
+        const k = Math.min(1, (r - SINK) / RISE);
+        const ease = 1 - Math.pow(1 - k, 3);
+        b.position.y = -IGRIS_HEIGHT * 1.05 * (1 - ease);
+        b.position.x = 0;
+        if (k >= 1) {
+          stateRef.current = "risen";
+          setState("risen");
+          addShake(0.35);
+          useWorldStore.getState().finishRising();
+        }
+      }
     }
-    const k = progress.current;
-    for (const m of r.body) {
-      m.color.copy(BONE).lerp(SHADOW, k);
-      m.setValues({ emissiveIntensity: k * (0.55 + 0.25 * Math.sin(clock.elapsedTime * 2 + index)) });
-    }
-    for (const m of r.eyes) m.setValues({ opacity: k });
 
+    // stone until it has passed through the shadow, then a slow breathing glow
+    const shadowed = progress.current >= 1;
+    b.traverse((node) => {
+      const mesh = node as Mesh;
+      const looks = mesh.userData.looks as Looks | undefined;
+      if (!looks) return;
+      const m = shadowed ? looks.shadow : looks.stone;
+      if (mesh.material !== m) mesh.material = m;
+      if (shadowed) m.setValues({ emissiveIntensity: 0.9 + 0.35 * Math.sin(t * 2 + index) });
+    });
+
+    // ── risen: glide after the Monarch in formation ──
     if (st === "risen") {
-      const busy = r.current === "Taunt" && (r.actions.Taunt?.isRunning() ?? false);
       const [ox, oz] = slotOffset(Math.max(0, slot));
       const hd = live.hunter.heading;
       const tx = live.hunter.x + ox * Math.cos(hd) + oz * Math.sin(hd);
@@ -226,41 +207,32 @@ function Fallen({ quest, index }: { quest: Quest; index: number }) {
       const dx = tx - h.position.x;
       const dz = tz - h.position.z;
       const dist = Math.hypot(dx, dz);
-      let want: Clip = "Idle";
-      if (!busy && dist > 0.35) {
-        const spd = Math.min(world.runSpeed * 1.1, dist * 2.2);
-        const step = Math.min(dist, spd * delta);
+      let want = 0;
+      if (dist > 0.35) {
+        want = Math.min(world.runSpeed * 1.1, dist * 2.2);
+        const step = Math.min(dist, want * delta);
         h.position.x += (dx / dist) * step;
         h.position.z += (dz / dist) * step;
-        const target = Math.atan2(dx, dz);
-        let d = (target - h.rotation.y) % (Math.PI * 2);
-        if (d > Math.PI) d -= Math.PI * 2;
-        if (d < -Math.PI) d += Math.PI * 2;
-        h.rotation.y += d * Math.min(1, delta * 8);
-        want = spd > world.walkSpeed ? "Running_A" : spd > 0.9 ? "Walking_D_Skeletons" : "Idle";
-      } else if (!busy) {
+        h.rotation.y += wrapAngle(Math.atan2(dx, dz) - h.rotation.y) * Math.min(1, delta * 8);
+      } else {
         // at rest: face the way the Monarch faces
-        let d = (hd - h.rotation.y) % (Math.PI * 2);
-        if (d > Math.PI) d -= Math.PI * 2;
-        if (d < -Math.PI) d += Math.PI * 2;
-        h.rotation.y += d * Math.min(1, delta * 3);
+        h.rotation.y += wrapAngle(hd - h.rotation.y) * Math.min(1, delta * 3);
       }
-      if (!busy && want !== r.current) {
-        r.actions[r.current]?.fadeOut(0.25);
-        r.actions[want]?.reset().fadeIn(0.25).play();
-        r.current = want;
-      }
+      speed.current += (want - speed.current) * Math.min(1, delta * 5);
+      // shadows don't walk — they hover and lean into the glide
+      b.position.y = 0.18 + Math.sin(t * 1.8 + index * 1.3) * 0.07;
+      b.rotation.x = Math.min(0.28, speed.current * 0.035);
+      b.rotation.z = Math.sin(t * 1.1 + index) * 0.025;
     }
-    r.mixer.update(delta);
 
     if (burst.current) {
       burstT.current = Math.min(1, burstT.current + delta * 0.5);
-      const t = burstT.current;
-      burst.current.visible = t < 1;
-      burst.current.scale.set(1 + t * 5, 1 + t * 1.5, 1 + t * 5);
+      const bt = burstT.current;
+      burst.current.visible = bt < 1;
+      burst.current.scale.set(1 + bt * 5, 1 + bt * 1.5, 1 + bt * 5);
       burst.current.position.set(grave.x, 0, grave.z);
       const mesh = burst.current.children[0] as Mesh;
-      (mesh.material as MeshBasicMaterial).opacity = (1 - t) * 0.9;
+      (mesh.material as MeshBasicMaterial).opacity = (1 - bt) * 0.9;
     }
   });
 
@@ -273,9 +245,15 @@ function Fallen({ quest, index }: { quest: Quest; index: number }) {
   return (
     <>
       <group ref={holder} onClick={onClick}>
-        <primitive object={clone} />
+        <group ref={body}>
+          <primitive object={clone} scale={fit.scale} position={fit.offset} />
+        </group>
+        {/* the pool of shadow every soldier stands in */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.06, 0]} material={pool}>
+          <planeGeometry args={[3, 3]} />
+        </mesh>
         {state === "fallen" && phase === "world" && nearCrypt && (
-          <Html position={[0, 1.4, 0]} center zIndexRange={[20, 0]}>
+          <Html position={[0, IGRIS_HEIGHT + 0.4, 0]} center zIndexRange={[20, 0]}>
             <button
               type="button"
               onClick={() => useWorldStore.getState().arise(quest.id)}
@@ -289,7 +267,7 @@ function Fallen({ quest, index }: { quest: Quest; index: number }) {
           </Html>
         )}
         {state === "risen" && (
-          <Sparkles count={10} scale={[1.2, 2.2, 1.2]} position={[0, 1.2, 0]} size={2} speed={0.5} color={COLORS.arcane} />
+          <Sparkles count={12} scale={[1.4, 2.8, 1.4]} position={[0, 1.4, 0]} size={2.2} speed={0.5} color={COLORS.arcane} />
         )}
       </group>
       {/* the extraction: a column of shadow erupting from the grave */}
@@ -303,11 +281,12 @@ function Fallen({ quest, index }: { quest: Quest; index: number }) {
   );
 }
 
+/** the Shadow Legion — each project is a fallen knight until the visitor commands ARISE */
 export function ShadowLegion() {
   return (
     <>
       {quests.map((q, i) => (
-        <Fallen key={q.id} quest={q} index={i} />
+        <Soldier key={q.id} quest={q} index={i} />
       ))}
     </>
   );
