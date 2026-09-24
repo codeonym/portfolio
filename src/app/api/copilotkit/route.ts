@@ -1,3 +1,5 @@
+import { after } from "next/server";
+import { awaitAllCallbacks } from "@langchain/core/callbacks/promises";
 import { CopilotRuntime, createCopilotRuntimeHandler, InMemoryAgentRunner } from "@copilotkit/runtime/v2";
 import { OpenRouterTranscriptionService } from "@/agent/server/audio";
 import { hasModelKey } from "@/agent/server/model";
@@ -57,4 +59,8 @@ const handler = createCopilotRuntimeHandler({
   },
 });
 
-export const POST = (request: Request) => handler(request);
+export const POST = (request: Request) => {
+  // LangSmith uploads traces in the background; on serverless, finish them before the function freezes
+  if (process.env.LANGSMITH_TRACING === "true") after(awaitAllCallbacks);
+  return handler(request);
+};

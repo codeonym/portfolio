@@ -79,6 +79,7 @@ const agents = new Map<string, ReturnType<typeof build>>();
 
 function build(modelId: string) {
   return createAgent({
+    name: "system-voice",
     // short, fast turns: little reasoning, few tokens
     model: createChatModel(modelId, { temperature: 0.6, maxTokens: 500, reasoningEffort: "low" }),
     tools: [delegateTask],

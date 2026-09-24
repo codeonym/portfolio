@@ -70,6 +70,7 @@ const agents = new Map<string, ReturnType<typeof build>>();
 
 function build(modelId: string) {
   return createAgent({
+    name: "system",
     model: createChatModel(modelId),
     tools: backendTools,
     systemPrompt: SYSTEM_PROMPT,

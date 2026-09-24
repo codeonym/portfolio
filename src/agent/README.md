@@ -95,6 +95,20 @@ Pure modules have unit tests: `pnpm test`.
 | `TTS_VOICE` | no | voice id for the TTS model, default `gb_oliver_confident` (Voxtral voices: `en_paul_*`, `gb_oliver_*`, `gb_jane_*`, `fr_marie_*`) |
 | `EDGE_CONFIG` | no | Vercel Edge Config connection string. When set, the `MODEL_ID` **item** in Edge Config overrides the env var. |
 | `SITE_URL` | no | sent to OpenRouter as `HTTP-Referer` |
+| `LANGSMITH_TRACING` | no | `true` traces every agent run to LangSmith (LangChain reads the `LANGSMITH_*` vars itself) |
+| `LANGSMITH_API_KEY` | with tracing | LangSmith API key |
+| `LANGSMITH_PROJECT` | no | LangSmith project the traces land in |
+| `LANGSMITH_ENDPOINT` | no | LangSmith API URL, default `https://api.smith.langchain.com` (set the EU URL for EU workspaces) |
+
+`.env.example` lists them all.
+
+**Tracing.** Each run is one trace named after its agent (`system` or
+`system-voice`), tagged with it, and carrying `thread_id` in its metadata, so
+LangSmith's Threads view groups a visitor's conversation. A spoken turn shows
+up as a `system-voice` trace, followed by the `system` trace for each
+delegated task. The route flushes pending traces with `after()`, so they are
+not lost when a Vercel function freezes. STT and TTS are direct OpenRouter
+calls and are not traced (the audio would bloat the traces).
 
 The model id is read on every request, never at build time. On Vercel:
 
