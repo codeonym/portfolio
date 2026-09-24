@@ -15,7 +15,7 @@ const MAX_CHUNK = 220;
 /** the very first chunk breaks at a comma past this length — first audio sooner */
 const FIRST_SOFT = 60;
 
-const ABBREVIATIONS = ["e.g.", "i.e.", "etc.", "vs.", "mr.", "mrs.", "ms.", "dr.", "st.", "no."];
+const ABBREVIATIONS = ["e.g.", "i.e.", "etc.", "vs.", "mr.", "mrs.", "ms.", "dr.", "st.", "no.", "u.s.", "u.k."];
 
 /** sentence ends: latin, ellipsis, Arabic question mark, CJK full stops */
 const END = /[.!?…؟。！？]/;
@@ -30,6 +30,11 @@ function sentenceEnd(text: string): number {
     let j = i + 1;
     while (j < text.length && END.test(text[j])) j++;
     if (j >= text.length) return -1; // can't tell yet: "3." might become "3.5"
+    // two replies glued without a space ("…view.Hunter") — a word, then a capitalized word
+    if (/\p{Lu}/u.test(text[j]) && /\p{Ll}{3}$/u.test(text.slice(0, i))) {
+      if (j + 1 >= text.length) return -1;
+      if (/\p{Ll}/u.test(text[j + 1])) return j;
+    }
     if (!/\s/.test(text[j])) {
       i = j - 1;
       continue;

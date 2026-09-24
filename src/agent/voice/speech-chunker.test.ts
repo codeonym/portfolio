@@ -77,3 +77,13 @@ test("the first chunk breaks early at a comma so the voice starts sooner", () =>
   // later sentences wait for their full stop
   assert.deepEqual(chunker.push(" using LangChain, a knowledge graph, and retrieval over the raw catalog data"), []);
 });
+
+test("splits sentences glued together without a space", () => {
+  assert.deepEqual(feed(["Its details are in the crypt view.Hunter, the quest is summoned. Next up."]), [
+    "Its details are in the crypt view.",
+    "Hunter, the quest is summoned.",
+    "Next up.",
+  ]);
+  // but not initials or versions
+  assert.deepEqual(feed(["Built with Node.JS and v3.5 in the U.S. today."]), ["Built with Node.JS and v3.5 in the U.S. today."]);
+});
