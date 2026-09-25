@@ -70,7 +70,7 @@ export const inventoryItems: InventoryItem[] = [
     meta: "FITS ONE LOCK · THIS ONE",
     lore: "Opens the very Gate you are standing in. USE it to inspect the source of this System on GitHub.",
     tags: ["source", "github"],
-    link: "https://github.com/codeonym/portfolio",
+    link: "https://github.com/codeonym-org/portfolio",
   },
 
   // ── CREDENTIALS ─────────────────────────────────────────────

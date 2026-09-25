@@ -1,0 +1,21 @@
+name: Bug report
+description: Something in the world, the HUD or THE SYSTEM misbehaves.
+type: Bug
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: Include what you asked THE SYSTEM, if the agent was involved.
+    validations: { required: true }
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+    validations: { required: true }
+  - type: input
+    id: env
+    attributes:
+      label: Browser and device
+      placeholder: "Chrome 140, Linux, integrated GPU"
+    validations: { required: true }

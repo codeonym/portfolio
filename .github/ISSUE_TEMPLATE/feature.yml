@@ -1,0 +1,13 @@
+name: Feature or improvement
+description: A new zone, agent tool, HUD element or content change.
+type: Feature
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What should it do?
+    validations: { required: true }
+  - type: textarea
+    id: why
+    attributes:
+      label: Why?
