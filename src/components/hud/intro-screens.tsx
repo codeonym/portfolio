@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import Image from "next/image";
 import { useProgress } from "@react-three/drei";
 import { player } from "@/config/player.config";
 import { world } from "@/config/world.config";
@@ -138,6 +139,22 @@ export function TitleScreen() {
           transition={{ duration: 0.8 }}
         >
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_20%,var(--void)_85%)]" />
+          <motion.div
+            className="relative mb-6"
+            initial={{ opacity: 0, scale: 0.6, rotate: -30 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            transition={{ duration: 1, delay: 0.1, ease: [0.2, 0.8, 0.2, 1] }}
+          >
+            <Image
+              src="/brand/mark.svg"
+              alt="codeonym logo"
+              width={112}
+              height={112}
+              priority
+              unoptimized
+              className="size-20 drop-shadow-[0_0_24px_var(--arcane)] sm:size-28"
+            />
+          </motion.div>
           <motion.p
             className="relative font-display text-[10px] tracking-[0.45em] text-system sm:text-xs"
             initial={{ opacity: 0, letterSpacing: "1em" }}
