@@ -22,6 +22,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.SITE_URL ?? "https://portfolio.codeonym.work"),
   title: "CODEONYM — AI Agent Engineer",
   description:
     "Bouarour Ayoub (codeonym) — AI Agent Engineer shipping production-grade multi-agent systems, grounded via MCP and delivered through CopilotKit/AG-UI. Enter the Gate: an explorable Solo Leveling world where every project is a shadow waiting to ARISE.",
