@@ -94,6 +94,21 @@ function playClip(rig: Rig, clip: Clip, { once = false, fade = 0.3 } = {}) {
   return next;
 }
 
+/** turn a knight to stone on its grave: the kneel, frozen mid-breath */
+function kneelAsStatue(rig: Rig, holder: Group, grave: (typeof graves)[number], index: number) {
+  rig.mixer.stopAllAction();
+  rig.armor.uRise.value = -10;
+  holder.position.set(grave.x, floorAt(grave.x, grave.z), grave.z);
+  holder.rotation.y = grave.yaw;
+  const kneel = rig.actions.Kneel;
+  if (kneel) {
+    kneel.reset().play();
+    kneel.time = 1.2 + index * 0.35;
+    kneel.timeScale = 0;
+  }
+  rig.current = "Kneel";
+}
+
 function createArmor(src: MeshStandardMaterial, uniforms: Armor) {
   // Igris's own sword and plume (not the Paladin's plate) keep their colour — the red plume is his signature
   const igris = !/Paladin/i.test(src.name);
@@ -211,16 +226,7 @@ function Soldier({ quest, index }: { quest: Quest; index: number }) {
       actions.Idle?.play();
       r.current = "Idle";
     } else {
-      armor.uRise.value = -10;
-      h.position.set(grave.x, floorAt(grave.x, grave.z), grave.z);
-      h.rotation.y = grave.yaw;
-      // a statue: the kneel, frozen mid-breath
-      const kneel = actions.Kneel;
-      if (kneel) {
-        kneel.play();
-        kneel.time = 1.2 + index * 0.35;
-        kneel.timeScale = 0;
-      }
+      kneelAsStatue(r, h, grave, index);
     }
     rig.current = r;
     return () => {
@@ -228,6 +234,18 @@ function Soldier({ quest, index }: { quest: Quest; index: number }) {
       rig.current = null;
     };
   }, [body, animations, grave, index]);
+
+  // progress wiped (reset_progress) — a standing shadow falls back to stone so it can be raised again
+  useEffect(() => {
+    const h = holder.current;
+    const r = rig.current;
+    if (risen || rising || stateRef.current === "fallen" || !h || !r) return;
+    kneelAsStatue(r, h, grave, index);
+    riseT.current = -1;
+    speed.current = 0;
+    stateRef.current = "fallen";
+    setState("fallen");
+  }, [risen, rising, grave, index]);
 
   // the store says ARISE — the shadow climbs the statue, and it stands
   useEffect(() => {
