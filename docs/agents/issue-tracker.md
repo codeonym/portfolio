@@ -1,7 +1,7 @@
 # Issue tracker (for agents and contributors)
 
-Work is tracked in **GitHub Issues** on this repo; the
-[codeonym-org board](https://github.com/orgs/codeonym-org/projects) shows it across the organization's repos.
+Work is tracked in **GitHub Issues** on this repo and on its own
+[portfolio board](https://github.com/orgs/codeonym-org/projects/1) (one board per repo).
 
 - **Milestones** map to versions (`v8 — Voice & brand`, `v9 — Next`, …). Finished milestones are closed and
   list the PRs that shipped them.
